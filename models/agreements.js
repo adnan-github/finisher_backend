@@ -1,36 +1,29 @@
 // requirements
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+var ObjectId = mongoose.Schema.Types.ObjectId;
 const PassportLocalMongoose = require('passport-local-mongoose');
+
 
 const agreemnetsSchema = new Schema({
     customer_id: {
-        type: String,
+        type: ObjectId,
         required: true
     },
     selected_Service: {
         type: String,
         required: true
     },
-    agreement_type: {
-        type: String,
-        required: true
-    },
     provider_Id: {
-        type: String,
+        type: ObjectId,
         required: true
     },
     status: {
-        type: Boolean,
-        required: true
-    },
-
-    isCompleted: {
-        type: Boolean,
+        type: String,
         required: true
     }
-}, {
-        timestamps: true
+}, {        
+    timestamps: true
     });
 
 const agreemnetsModel = mongoose.model('agreemnets', agreemnetsSchema);

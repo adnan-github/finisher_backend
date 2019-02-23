@@ -47,6 +47,7 @@ userRouter.post('/login', authenticate.authenticateUser, (req, res, next) => {
   res.setHeader('Content-Type', 'application/json');
   res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
 });
+
 // logout user and destroy the session
 userRouter.get('/logout', (req, res, next) => {
   if (req.session !== undefined) {

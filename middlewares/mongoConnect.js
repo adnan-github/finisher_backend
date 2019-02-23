@@ -4,7 +4,7 @@ mongoose.Promise = require('bluebird');
 
 function mongoConnect() {
     // mongodb connection
-    var url = config.mongo_url;
+    var url = process.env.MONGODB_ADDON_URI || config.mongo_url;
     var connect = mongoose.connect(url, {
         useNewUrlParser: true
     });

@@ -2,7 +2,7 @@
 const express       = require('express');
 const bodyParser    = require('body-parser');
 const Dishes        = require('../models/dishesmodel');
-const authenticate  = require('../middlewares/passportMiddleware');
+const authenticate  = require('../middlewares/user_passport');
 
 // constants 
 const dishRouter = express.Router();

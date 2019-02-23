@@ -5,18 +5,15 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var homeServicesModel     = require('../models/homeServices');
-var authenticate  = require('../middlewares/passportMiddleware');
+var authenticate  = require('../middlewares/user_passport');
 // homeServices route settings
 var homeServicesRouter = express.Router();
 homeServicesRouter.use(bodyParser.json());
 
 
 // homeServices route for new service
-homeServicesRouter.post('/addNew', (req, res, next) => {
-    console.log(req.body);
-
+homeServicesRouter.post('/addNew', authenticate.verifyUser, (req, res, next) => {
   homeServicesModel.create(new homeServicesModel(req.body),(err, service) => {
-    console.log(service);
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -28,7 +25,7 @@ homeServicesRouter.post('/addNew', (req, res, next) => {
 });
 
 // homeServices route for delete service
-homeServicesRouter.delete('/remove', (req, res, next) => {
+homeServicesRouter.delete('/remove', authenticate.verifyUser, (req, res, next) => {
 
   homeServicesModel.deleteOne(req.body,(err) => {
     if (err) {
@@ -43,7 +40,7 @@ homeServicesRouter.delete('/remove', (req, res, next) => {
 
 
 // homeServices route for get all service
-homeServicesRouter.get('/all', (req, res, next) => {
+homeServicesRouter.get('/all', authenticate.verifyUser, (req, res, next) => {
 
   homeServicesModel.find({},(err, homeServices) => {
     if (err) {

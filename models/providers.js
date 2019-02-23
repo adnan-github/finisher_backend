@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const PassportLocalMongoose = require('passport-local-mongoose');
 
-const usersSchema = new Schema({
+const providerSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -25,15 +25,19 @@ const usersSchema = new Schema({
         required: true,
         maxlength: 20,
         minlength: 8
+    },
+    profession: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true
 });
 
-usersSchema.plugin(PassportLocalMongoose);
-const usersModel = mongoose.model('users', usersSchema);
+providerSchema.plugin(PassportLocalMongoose);
+const providerModel = mongoose.model('providers', providerSchema);
 
-module.exports = usersModel;
+module.exports = providerModel;
 
 /*
 username: {

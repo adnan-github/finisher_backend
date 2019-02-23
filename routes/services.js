@@ -5,7 +5,7 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var servicesModel     = require('../models/services');
-var authenticate  = require('../middlewares/passportMiddleware');
+var authenticate  = require('../middlewares/user_passport');
 // services route settings
 var servicesRouter = express.Router();
 servicesRouter.use(bodyParser.json());
@@ -13,10 +13,8 @@ servicesRouter.use(bodyParser.json());
 
 // services route for new service
 servicesRouter.post('/addNew', (req, res, next) => {
-    console.log(req.body);
 
   servicesModel.create(new servicesModel(req.body),(err, service) => {
-    console.log(service);
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');

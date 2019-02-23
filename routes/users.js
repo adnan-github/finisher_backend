@@ -73,6 +73,9 @@ userRouter.get('/userInfo', (req, res, next) => {
       res.statusCode(400);
       res.json({ success: false , message: "login FAILED"})
       return;
+    } else if(!user) {
+      res.json({ success: false , message: "user not found"})
+      return;
     }
     res.json({user: user , message: "user info"});
   });

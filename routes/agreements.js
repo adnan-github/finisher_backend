@@ -5,7 +5,7 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var agreementsModel     = require('../models/agreements');
-var authenticate  = require('../middlewares/passportMiddleware');
+var authenticate  = require('../middlewares/user_passport');
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
@@ -13,10 +13,8 @@ agreementsRouter.use(bodyParser.json());
 
 // agreements route for new service
 agreementsRouter.post('/add', (req, res, next) => {
-    console.log(req.body);
 
   agreementsModel.create(new agreementsModel(req.body),(err, service) => {
-    console.log(service);
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -58,7 +56,6 @@ agreementsRouter.get('/all', (req, res, next) => {
 
 // services route for find one service
 agreementsRouter.get('/:id', (req, res, next) => {
-    console.log(req.params);
     agreementsModel.findById({_id: req.params.id},(err, agreements) => {
       if (err) {
         res.statusCode = 500;

@@ -9,6 +9,7 @@ var debug = require('debug')('confusion:server');
 var http  = require('http');
 var https = require('https');
 var fs    = require('fs');
+
  
 
 /**
@@ -22,7 +23,8 @@ app.set('securePort', port + 443);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server  = http.createServer(app);
+var io      = require('socket.io').listen(server);
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -36,17 +38,17 @@ server.on('listening', onListening);
  * Secure Server setup
  */
 
- var options = {
-   key  : fs.readFileSync(__dirname + '/private.key'),
-   cert : fs.readFileSync(__dirname + '/certificate.pem') 
- };
+//  var options = {
+//    key  : fs.readFileSync(__dirname + '/private.key'),
+//    cert : fs.readFileSync(__dirname + '/certificate.pem') 
+//  };
 
- var secureServer = https.createServer(options, app);
- secureServer.listen(app.get('securePort'), () => {
-   console.log('Secure server listening on port ', app.get('securePort'));
- });
- secureServer.on('error', onError);
- secureServer.on('listening', onListening);
+// //  var secureServer = https.createServer(options, app);
+// //  secureServer.listen(app.get('securePort'), () => {
+// //    console.log('Secure server listening on port ', app.get('securePort'));
+// //  });
+// //  secureServer.on('error', onError);
+// //  secureServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.

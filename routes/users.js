@@ -2,11 +2,12 @@
 var express     = require('express');
 var passport    = require('passport');
 var bodyParser  = require('body-parser');
-
+var jwt_decode  = require('jwt-decode');
+var mongoose    = require('mongoose');
 // custom modules
 var userModel     = require('../models/users');
 var Validate      = require('../validators/userValidation');
-var authenticate  = require('../middlewares/passportMiddleware');
+var authenticate  = require('../middlewares/user_passport');
 // user route settings
 var userRouter = express.Router();
 userRouter.use(bodyParser.json());
@@ -30,7 +31,7 @@ userRouter.post('/signup', (req, res, next) => {
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
     } else {
-      passport.authenticate('local')(req, res, () => {
+      (authenticate.authenticateUser)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, status: 'you are successfully signed up'});
@@ -40,11 +41,9 @@ userRouter.post('/signup', (req, res, next) => {
 });
 
 // Route to login and create session for the user
-userRouter.post('/login', passport.authenticate('local'), (req, res, next) => {
-  console.log(req, res)
-  let token = authenticate.generateToken({_id: req.user._id});
+userRouter.post('/login', authenticate.authenticateUser, (req, res, next) => {
+  let token = authenticate.user_generateToken({_id: req.user._id});
   res.statusCode = 200;
-  console.log('asdsad', token, req.user._id);
   res.setHeader('Content-Type', 'application/json');
   res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
 });
@@ -53,7 +52,6 @@ userRouter.get('/logout', (req, res, next) => {
   if (req.session !== undefined) {
     // on logout . destroy session and stored cookie, redirect to homepage
     req.session.destroy();
-    console.log(req.session);
     res.clearCookie('session-id');
     res.redirect('/');
   } else {
@@ -62,6 +60,21 @@ userRouter.get('/logout', (req, res, next) => {
     err.status = 403;
     next(err);
   }
+});
+
+userRouter.get('/userInfo', (req, res, next) => {
+  const payload = req.headers.authorization;
+  const token = payload.split(' ')[1];
+  var decoded_payload = jwt_decode(token);
+  _id = (decoded_payload._id);
+  userModel.findById(_id, function(err, user){
+    if(err){
+      res.statusCode(400);
+      res.json({ success: false , message: "login FAILED"})
+      return;
+    }
+    res.json({user: user , message: "user info"});
+  });
 });
 
 module.exports = userRouter;

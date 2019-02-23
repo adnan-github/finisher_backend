@@ -5,7 +5,6 @@ const isEmpty   = require('./is-empty');
 validateRegistration = data => {
     // store errors in this error object
     let errors  = {};
-    console.log('data', data);
     let count   = 0;
     Object.keys(data).forEach((value, index) => {
 

@@ -1,21 +1,30 @@
 // getting required modules
 var jwt = require('jsonwebtoken');
-var passport = require('passport');
 var jwtStrategy = require('passport-jwt').Strategy;
 var localStrategy = require('passport-local').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
-var passport = require('passport')
-  , FacebookStrategy = require('passport-facebook').Strategy;
-
+var FacebookStrategy = require('passport-facebook').Strategy;
+var passport_provider = require('passport');
+var passport_user = require('passport');
 
 
 // getting configuration file for the server
 var config = require('../utils/config');
 
 var User = require('../models/users');
+var Provider = require('../models/providers');
 
-exports.local = passport.use(new localStrategy(User.authenticate()));
-exports.facebook = passport.use(new FacebookStrategy({
+exports.user_local = passport_user.use('local-user', new localStrategy(User.authenticate(
+    function(username, password, done) {
+        User.findOne({ username: username }, function (err, user) {
+          if (err) { return done(err); }
+          if (!user) { return done(null, false); }
+          if (!user.verifyPassword(password)) { return done(null, false); }
+          return done(null, user);
+        });
+      }
+)));
+exports.facebook = passport_user.use(new FacebookStrategy({
     clientID: "2055752244507130",
     clientSecret: "29edc6fd48d24b8bf4a13e26dc91e60f",
     callbackURL: "http://localhost:4000/api/auth/facebook/callback"
@@ -26,11 +35,11 @@ exports.facebook = passport.use(new FacebookStrategy({
   }));
 
 // serialize and deserialize User 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport_user.serializeUser(User.serializeUser());
+passport_user.deserializeUser(User.deserializeUser());
 
 // This function will generate Token on User login
-exports.generateToken = (User) => {
+exports.user_generateToken = (User) => {
     return jwt.sign(User, config.secret_key, {
         expiresIn: 3600
     });
@@ -45,7 +54,7 @@ opts.secretOrKey = config.secret_key;
  *   [jwt Passport] => @{Params} { jwt payload and callback for the function }
  *   checks if the user is authenticated or not
  */
-exports.jwtPassport = passport.use(new jwtStrategy(opts,
+exports.jwtPassport = passport_user.use('jwt-user', new jwtStrategy(opts,
     (jwt_payload, done) => {
         console.log("jwt payload => ", jwt_payload);
         User.findById(jwt_payload._id, (err, user) => {
@@ -59,7 +68,9 @@ exports.jwtPassport = passport.use(new jwtStrategy(opts,
         });
     }));
 
-exports.verifyUser = passport.authenticate('jwt', {
+exports.verifyUser = passport_user.authenticate('jwt-user', {
     session: false
 });
 
+
+exports.authenticateUser = passport_user.authenticate('local-user');

@@ -12,11 +12,11 @@ var indexRouter = require('./routes/index');
 var servicesRouter = require('./routes/services');
 var homeServicesRouter = require('./routes/homeServices');
 var agreementsRouter = require('./routes/agreements');
+var providersRouter = require('./routes/providers');
 
 //middlwares
-var authMiddleware = require('./middlewares/auth');
 var mongoConnect = require('./middlewares/mongoConnect');
-var passportAuth = require('./middlewares/passportMiddleware');
+var passportAuth = require('./middlewares/user_passport');
 
 var app = express();
 
@@ -37,9 +37,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/homeServices', homeServicesRouter);
 app.use('/api/agreements', agreementsRouter);
+app.use('/api/providers', providersRouter);
 
-// custom middlewares 
-// app.use(authMiddleware);
 mongoConnect();
 
 // view engine setup

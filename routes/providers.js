@@ -35,7 +35,7 @@ providersRouter.post('/signup', (req, res, next) => {
 
   providersRouter.post('/login', (req, res, next) => {
     // let token = authenticate.generateToken({_id: req.user._id});
-    providersModel.findOne({ phone: req.body.phone }, function (err, user) {
+    providersModel.findOne({ username: req.body.username }, function (err, user) {
         if (err) {
           res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');

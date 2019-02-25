@@ -28,7 +28,7 @@ const providerSchema = new Schema({
     },
     profession: {
         type: String,
-        required: true
+        // requ/ired: true
     }
 }, {
     timestamps: true

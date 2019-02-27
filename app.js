@@ -1,5 +1,6 @@
 // requirements
 var path        = require('path');
+var cors        = require('cors');
 var logger      = require('morgan');
 var express     = require('express');
 var passport    = require('passport');
@@ -20,6 +21,7 @@ var mongoConnect = require('./middlewares/mongoConnect');
 
 var app = express();
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({

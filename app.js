@@ -8,13 +8,14 @@ var createError = require('http-errors');
 // var cookieParser  = require('cookie-parser');
 
 // routes
-var usersRouter         = require('./routes/users');
+var usersRouter         = require('./routes/customer/users');
 var indexRouter         = require('./routes/index');
 var servicesRouter      = require('./routes/services');
 var homeServicesRouter  = require('./routes/homeServices');
 var agreementsRouter    = require('./routes/agreements');
-var providersRouter     = require('./routes/providers');
-var adminRouter         = require('./routes/adminRouter');
+var providersRouter     = require('./routes/provider/providers');
+var adminRouter         = require('./routes/admin/adminRouter');
+
 
 //middlwares
 var mongoConnect = require('./middlewares/mongoConnect');

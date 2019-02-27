@@ -5,9 +5,9 @@ var bodyParser  = require('body-parser');
 var jwt_decode  = require('jwt-decode');
 var mongoose    = require('mongoose');
 // custom modules
-var userModel     = require('../models/users');
-var Validate      = require('../validators/userValidation');
-var authenticate  = require('../middlewares/user_passport');
+var userModel     = require('../../models/users');
+var Validate      = require('../../validators/userValidation');
+var authenticate  = require('../../middlewares/user_passport');
 // user route settings
 var userRouter = express.Router();
 userRouter.use(bodyParser.json());

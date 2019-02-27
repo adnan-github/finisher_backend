@@ -3,7 +3,6 @@ var jwt = require('jsonwebtoken');
 var jwtStrategy = require('passport-jwt').Strategy;
 var localStrategy = require('passport-local').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
-var FacebookStrategy = require('passport-facebook').Strategy;
 var passport_provider = require('passport');
 
 
@@ -22,15 +21,6 @@ exports.provider_local = passport_provider.use('local-provider', new localStrate
         });
       }
 )));
-exports.facebook = passport_provider.use(new FacebookStrategy({
-    clientID: "2055752244507130",
-    clientSecret: "29edc6fd48d24b8bf4a13e26dc91e60f",
-    callbackURL: "http://localhost:4000/api/auth/facebook/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    console.log(profile)
-    // TODO: do sth with returned values
-  }));
 
 // serialize and deserialize User 
 passport_provider.serializeUser(Provider.serializeUser());
@@ -54,7 +44,6 @@ opts.secretOrKey = config.secret_key;
  */
 exports.jwtPassport = passport_provider.use('jwt-provider', new jwtStrategy(opts,
     (jwt_payload, done) => {
-        console.log("jwt payload => ", jwt_payload);
         Provider.findById(jwt_payload._id, (err, user) => {
             if (err) {
                 return done(err, false);

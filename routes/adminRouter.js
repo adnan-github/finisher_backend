@@ -3,27 +3,27 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 
 // custom modules
-var providersModel   = require('../models/providers');
+var adminsModel   = require('../models/admin');
 var Validate      = require('../validators/userValidation');
-var authenticate = require('../middlewares/provider_passport');
+var authenticate = require('../middlewares/admin_passport');
 
 // user route settings
-var providersRouter = express.Router();
-providersRouter.use(bodyParser.json());
+var adminsRouter = express.Router();
+adminsRouter.use(bodyParser.json());
 
-providersRouter.post('/signup', (req, res, next) => {
+adminsRouter.post('/signup', (req, res, next) => {
   const { errors, isValid } = Validate(req.body);
 
   if(!isValid) {
     return res.status(400).json(errors);
   }
-  providersModel.register(new providersModel(req.body), req.body.password, (err, user) => {
+  adminsModel.register(new adminsModel(req.body), req.body.password, (err, user) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
     } else {
-      (authenticate.authenticatProvider)(req, res, () => {
+      (authenticate.authenticatadmin)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, status: 'you are successfully signed up'});
@@ -32,9 +32,9 @@ providersRouter.post('/signup', (req, res, next) => {
   });
 });
 
-  providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
+  adminsRouter.post('/login', authenticate.authenticatadmin, (req, res, next) => {
     // let token = authenticate.generateToken({_id: req.user._id});
-    providersModel.findOne({ username: req.body.username }, function (err, user) {
+    adminsModel.findOne({ username: req.body.username }, function (err, user) {
         if (err) {
           res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');
@@ -54,23 +54,23 @@ providersRouter.post('/signup', (req, res, next) => {
       });
   });
 
-  providersRouter.get('/providerInfo', (req, res, next) => {
+  adminsRouter.get('/adminInfo', (req, res, next) => {
     const payload = req.headers.authorization;
     const token = payload.split(' ')[1];
     var decoded_payload = jwt_decode(token);
     _id = (decoded_payload._id);
-    providersModel.findById(_id, function(err, provider){
+    adminsModel.findById(_id, function(err, admin){
       if(err){
         res.statusCode(400);
         res.json({ success: false , message: "login FAILED"})
         return;
-      } else if(!provider) {
-        res.json({ success: false , message: "provider not found"})
+      } else if(!admin) {
+        res.json({ success: false , message: "admin not found"})
         return;
       }
-      res.json({provider: provider , message: "provider info"});
+      res.json({admin: admin , message: "admin info"});
     });
   });
   
  
-module.exports = providersRouter;
+module.exports = adminsRouter;

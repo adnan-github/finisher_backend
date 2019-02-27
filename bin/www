@@ -45,7 +45,7 @@ server.on('listening', onListening);
 
 // //  var secureServer = https.createServer(options, app);
 // //  secureServer.listen(app.get('securePort'), () => {
-// //    console.log('Secure server listening on port ', app.get('securePort'));
+// //   
 // //  });
 // //  secureServer.on('error', onError);
 // //  secureServer.on('listening', onListening);

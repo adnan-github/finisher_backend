@@ -1,22 +1,22 @@
 // requirements
-var path = require('path');
-var logger = require('morgan');
-var express = require('express');
-var passport = require('passport');
+var path        = require('path');
+var logger      = require('morgan');
+var express     = require('express');
+var passport    = require('passport');
 var createError = require('http-errors');
 // var cookieParser  = require('cookie-parser');
 
 // routes
-var usersRouter = require('./routes/users');
-var indexRouter = require('./routes/index');
-var servicesRouter = require('./routes/services');
-var homeServicesRouter = require('./routes/homeServices');
-var agreementsRouter = require('./routes/agreements');
-var providersRouter = require('./routes/providers');
+var usersRouter         = require('./routes/users');
+var indexRouter         = require('./routes/index');
+var servicesRouter      = require('./routes/services');
+var homeServicesRouter  = require('./routes/homeServices');
+var agreementsRouter    = require('./routes/agreements');
+var providersRouter     = require('./routes/providers');
+var adminRouter         = require('./routes/adminRouter');
 
 //middlwares
 var mongoConnect = require('./middlewares/mongoConnect');
-var passportAuth = require('./middlewares/user_passport');
 
 var app = express();
 
@@ -38,6 +38,7 @@ app.use('/api/services', servicesRouter);
 app.use('/api/homeServices', homeServicesRouter);
 app.use('/api/agreements', agreementsRouter);
 app.use('/api/providers', providersRouter);
+app.use('/api/admins', adminRouter);
 
 mongoConnect();
 

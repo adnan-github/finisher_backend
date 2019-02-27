@@ -12,11 +12,11 @@ var adminsRouter = express.Router();
 adminsRouter.use(bodyParser.json());
 
 adminsRouter.post('/signup', (req, res, next) => {
-  const { errors, isValid } = Validate(req.body);
+  // const { errors, isValid } = Validate(req.body);
 
-  if(!isValid) {
-    return res.status(400).json(errors);
-  }
+  // if(!isValid) {
+  //   return res.status(400).json(errors);
+  // }
   adminsModel.register(new adminsModel(req.body), req.body.password, (err, user) => {
     if (err) {
       res.statusCode = 500;

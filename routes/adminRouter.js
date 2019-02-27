@@ -33,6 +33,8 @@ adminsRouter.post('/signup', (req, res, next) => {
 });
 
   adminsRouter.post('/login', authenticate.authenticatadmin, (req, res, next) => {
+
+    let token = authenticate.admin_generateToken({_id: req.user._id});
     // let token = authenticate.generateToken({_id: req.user._id});
     adminsModel.findOne({ username: req.body.username }, function (err, user) {
         if (err) {
@@ -48,7 +50,7 @@ adminsRouter.post('/signup', (req, res, next) => {
         else {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.json({ success: true, status: 'Successfully Logged in..!!!'});
+          res.json({ success: true, token:token, status: 'Successfully Logged in..!!!'});
         }
         return next;
       });

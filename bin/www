@@ -25,9 +25,22 @@ app.set('securePort', port + 443);
 
 var server  = http.createServer(app);
 var io      = require('socket.io').listen(server);
-/**
+/** 
  * Listen on provided port, on all network interfaces.
  */
+
+// io.on('connection', (socket) => {
+//   console.log(`Socket ${socket.id} connected. ${socket.data}`);
+//   socket.on('disconnect', () => {
+//     console.log(`Socket ${socket.id} disconnected.`);
+//   });
+  
+// });
+
+io.on('channel1', (data) => {
+
+  console.log('Greetings from RN app', data);  
+});
 
 server.listen(port, '0.0.0.0');
 // server.listen(port)

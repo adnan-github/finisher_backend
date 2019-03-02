@@ -1,7 +1,6 @@
 // requirements
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const PassportLocalMongoose = require('passport-local-mongoose');
 
 const homeServicesSchema = new Schema({
     name: {

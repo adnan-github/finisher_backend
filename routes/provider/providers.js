@@ -11,6 +11,28 @@ var authenticate = require('../../middlewares/provider_passport');
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
 
+providersRouter.post('/signup', (req, res, next) => {
+
+  const { errors, isValid } = Validate(req.body);
+
+  if(!isValid) {
+    return res.status(400).json(errors);
+  }
+  providersModel.register(new providersModel(req.body), req.body.password, (err, user) => {
+    if (err) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({err: err});
+    } else {
+      (authenticate.authenticateUser)(req, res, () => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, status: 'you are successfully signed up'});
+      });
+    }
+  });
+});
+
 
   providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
     // let token = authenticate.generateToken({_id: req.user._id});

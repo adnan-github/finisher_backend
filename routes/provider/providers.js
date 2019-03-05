@@ -1,6 +1,7 @@
 // requirements for user model
 var express     = require('express');
 var bodyParser  = require('body-parser');
+var multer      = require('multer');
 
 // custom modules
 var providersModel   = require('../../models/providers');
@@ -10,6 +11,15 @@ var authenticate = require('../../middlewares/provider_passport');
 // user route settings
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
+
+const Storage = multer.diskStorage({
+  destination(req, file, callback) {
+    callback(null, './images')
+  },
+  filename(req, file, callback) {
+    callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`)
+  },
+})
 
 providersRouter.post('/signup', (req, res, next) => {
 

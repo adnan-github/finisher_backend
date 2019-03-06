@@ -16,7 +16,7 @@ var fs    = require('fs');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '4000');
+var port = normalizePort(process.env.PORT || process.env.LOCAL_PORT_DEV || 4000 );
 app.set('port', port);                    
 app.set('securePort', port + 443);
 /**

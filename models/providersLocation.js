@@ -15,9 +15,7 @@ const geoLocationSchema = new Schema({
 
 const providersLocationSchema = new Schema({
     providerId: {
-        type: ObjectId,
-        required: true,
-        unique: true
+        type: ObjectId
     },
     geometry: geoLocationSchema,    
     socketId: String    

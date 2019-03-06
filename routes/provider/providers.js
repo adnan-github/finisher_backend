@@ -2,11 +2,12 @@
 var express     = require('express');
 var bodyParser  = require('body-parser');
 var multer      = require('multer');
+var jwt_decode  = require('jwt-decode');
 
 // custom modules
-var providersModel   = require('../../models/providers');
-var Validate      = require('../../validators/userValidation');
-var authenticate = require('../../middlewares/provider_passport');
+var providersModel    = require('../../models/providers');
+var Validate          = require('../../validators/userValidation');
+var authenticate      = require('../../middlewares/provider_passport');
 
 // user route settings
 var providersRouter = express.Router();
@@ -14,14 +15,34 @@ providersRouter.use(bodyParser.json());
 
 const Storage = multer.diskStorage({
   destination(req, file, callback) {
-    callback(null, './images')
+    callback(null, './idImages')
   },
   filename(req, file, callback) {
+    console.log(file, "imag")
     callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`)
   },
-})
+});
 
-providersRouter.post('/signup', (req, res, next) => {
+// const upload = multer({
+//   storage: Storage,
+//   limits:{fileSize: 100000000},
+// }).fields([{
+//   name: 'cnic_front',
+//   maxCount: 1
+// }, {
+//   name: 'cnic_back',
+//   maxCount: 1
+// }])
+
+const upload = multer({
+  storage: Storage,
+  limits:{fileSize: 100000000}
+}).single('cnic_front')
+providersRouter.post('/cnicupload', upload, (req, res) => {
+      console.log(req.body, req.file);
+});
+
+providersRouter.post('/signup', upload, (req, res, next) => {
 
   const { errors, isValid } = Validate(req.body);
 
@@ -34,7 +55,7 @@ providersRouter.post('/signup', (req, res, next) => {
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
     } else {
-      (authenticate.authenticateUser)(req, res, () => {
+      (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, status: 'you are successfully signed up'});

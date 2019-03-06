@@ -5,10 +5,6 @@ var localStrategy = require('passport-local').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
 var passport_provider = require('passport');
 
-
-// getting configuration file for the server
-var config = require('../utils/config');
-
 var Provider = require('../models/providers');
 
 exports.provider_local = passport_provider.use('local-provider', new localStrategy(Provider.authenticate(
@@ -28,7 +24,7 @@ passport_provider.deserializeUser(Provider.deserializeUser());
 
 // This function will generate Token on User login
 exports.provider_generateToken = (User) => {
-    return jwt.sign(User, config.secret_key, {
+    return jwt.sign(User, process.env.SECRET_KEY_JWT, {
         expiresIn: 3600
     });
 };
@@ -36,7 +32,7 @@ exports.provider_generateToken = (User) => {
 // options for setting the JWT Tokens
 var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = config.secret_key;
+opts.secretOrKey = process.env.SECRET_KEY_JWT;
 
 /* // jwt passport strategy 
  *   [jwt Passport] => @{Params} { jwt payload and callback for the function }

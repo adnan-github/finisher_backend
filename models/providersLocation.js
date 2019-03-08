@@ -17,7 +17,10 @@ const providersLocationSchema = new Schema({
     providerId: {
         type: ObjectId
     },
-    geometry: geoLocationSchema,    
+    coordinate: {
+        type: geoLocationSchema,
+        index: true
+    },    
     socketId: String    
 }, {
     timestamps: true

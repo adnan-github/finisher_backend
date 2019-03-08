@@ -10,13 +10,16 @@ var http  = require('http');
 var https = require('https');
 var fs    = require('fs');
 
- 
+//strategies to verify socket connection
+var provider_passport = require('../middlewares/provider_passport');
+var admin_passport    = require('../middlewares/admin_passport');
+var consumer_passport = require('../middlewares/user_passport'); 
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || process.env.LOCAL_PORT_DEV || 4000 );
+var port = normalizePort( process.env.PORT || process.env.LOCAL_PORT_DEV || 4000 );
 app.set('port', port);                    
 app.set('securePort', port + 443);
 /**
@@ -29,18 +32,28 @@ var io      = require('socket.io').listen(server);
  * Listen on provided port, on all network interfaces.
  */
 
-// io.on('connection', (socket) => {
-//   console.log(`Socket ${socket.id} connected. ${socket.data}`);
-//   socket.on('disconnect', () => {
-//     console.log(`Socket ${socket.id} disconnected.`);
-//   });
+
+app.io = io.on('connection', (socket) => {
+  console.log(`Socket ${socket.id} connected.` + socket);
+  socket.on('user-connected', (data) => {
+    console.log(data);
+  });
+  socket.on('disconnect', (data) => {
+    console.log(`Socket ${socket.id} disconnected.`, data);
+  });
   
-// });
+  socket.on('first-channel', (data) => {
+    console.log(data);
+  });
 
-io.on('channel1', (data) => {
-
-  console.log('Greetings from RN app', data);  
+  socket.on('action', (action) => {
+    if(action.type == 'server/update-location'){
+      console.log(action.data);
+    }
+    console.log(action)
+  })
 });
+
 
 server.listen(port, '0.0.0.0');
 // server.listen(port)

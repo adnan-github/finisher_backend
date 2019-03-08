@@ -58,7 +58,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, status: 'you are successfully signed up'});
+        res.json({ success: true, status: 'you are successfully signed up', data: user });
       });
     }
   });

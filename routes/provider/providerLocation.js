@@ -37,7 +37,7 @@ providerLocationRouter.put("/providerLocationSocket/:id", function(req, res, nex
 providerLocationRouter.get("/providerLocation", function(req, res, next){
 	providerLocationModel.ensureIndex({"coordinate":"2dsphere"});
 	providerLocationModel.find({
-			"geometry":{
+			"coordinate":{
 				"$near":{
 					"$geometry":{
 						"type":"Point",

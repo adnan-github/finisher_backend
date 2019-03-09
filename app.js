@@ -35,7 +35,7 @@ app.use(express.urlencoded({
 
 
 app.use(passport.initialize());
-// routes that don't need authentication and can be accessed without it
+
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);

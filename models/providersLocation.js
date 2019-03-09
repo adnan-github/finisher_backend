@@ -7,7 +7,7 @@ const geoLocationSchema = new Schema({
         type: String,
         default: "Point"
     },
-    cordinates: {
+    coordinates: {
         type: [Number],
         index: "2dsphere"
     }
@@ -21,7 +21,8 @@ const providersLocationSchema = new Schema({
         type: geoLocationSchema,
         index: true
     },    
-    socketId: String    
+    socketId: String,
+    status: String    
 }, {
     timestamps: true
 });

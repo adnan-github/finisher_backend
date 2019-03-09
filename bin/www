@@ -10,10 +10,7 @@ var http  = require('http');
 var https = require('https');
 var fs    = require('fs');
 
-//strategies to verify socket connection
-var provider_passport = require('../middlewares/provider_passport');
-var admin_passport    = require('../middlewares/admin_passport');
-var consumer_passport = require('../middlewares/user_passport'); 
+var provider_location = require('../socket_controllers/provider_location');
 
 /**
  * Get port from environment and store in Express.
@@ -33,24 +30,26 @@ var io      = require('socket.io').listen(server);
  */
 
 
-app.io = io.on('connection', (socket) => {
+app.io = io.sockets.on('connection', (socket) => {
   console.log(`Socket ${socket.id} connected.` + socket);
   socket.on('user-connected', (data) => {
     console.log(data);
   });
-  socket.on('disconnect', (data) => {
-    console.log(`Socket ${socket.id} disconnected.`, data);
-  });
-  
-  socket.on('first-channel', (data) => {
-    console.log(data);
+  socket.on('disconnect', () => {
+    if(socket.type == 'provider'){
+      provider_location.updateProviderStatus( socket.id );
+      console.log('disconnected')
+    }
   });
 
+  // all redux dispatched actions will be catched here  
   socket.on('action', (action) => {
     if(action.type == 'server/update-location'){
-      console.log(action.data);
+      if(action.payload.userType == 'provider' ){
+        socket.type = 'provider';
+        provider_location.updateProviderLocation( action.payload, socket.id );
+      }
     }
-    console.log(action)
   })
 });
 

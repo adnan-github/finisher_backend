@@ -1,7 +1,6 @@
 // requirements
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-var ObjectId = mongoose.Schema.Types.ObjectId;
 const PassportLocalMongoose = require('passport-local-mongoose');
 
 

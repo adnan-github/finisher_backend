@@ -6,12 +6,13 @@ const PassportLocalMongoose = require('passport-local-mongoose');
 const servicesSchema = new Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
-    icon: {
-        type: String,
+    perHour: {
+        type: Number,
         required: true
-    },
+    }
 }, {
     timestamps: true
 });

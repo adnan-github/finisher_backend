@@ -1,4 +1,3 @@
-// requirements for user model
 var express     = require('express');
 var bodyParser  = require('body-parser');
 
@@ -7,7 +6,7 @@ var adminsModel   = require('../../models/admin');
 var Validate      = require('../../validators/userValidation');
 var authenticate = require('../../middlewares/admin_passport');
 
-// user route settings
+// admin route settings
 var adminsRouter = express.Router();
 adminsRouter.use(bodyParser.json());
 ``

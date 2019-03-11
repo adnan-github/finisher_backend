@@ -11,6 +11,7 @@ var https = require('https');
 var fs    = require('fs');
 
 var provider_location = require('../socket_controllers/provider_location');
+var customer_location = require('../socket_controllers/customer_location');
 
 /**
  * Get port from environment and store in Express.
@@ -29,28 +30,38 @@ var io      = require('socket.io').listen(server);
  * Listen on provided port, on all network interfaces.
  */
 
-
 app.io = io.sockets.on('connection', (socket) => {
-  console.log(`Socket ${socket.id} connected.` + socket);
-  socket.on('user-connected', (data) => {
-    console.log(data);
-  });
+  console.log(`Socket ${socket.id} connected.`);
   socket.on('disconnect', () => {
     if(socket.type == 'provider'){
+      console.log('disconnected provider');
       provider_location.updateProviderStatus( socket.id );
-      console.log('disconnected')
     }
+    if( socket.type == 'customer' ){
+      console.log('disconnected customer');
+      customer_location.updateCustomerStatus( socket.id );
+    }
+    console.log('disconnected without type')
   });
 
   // all redux dispatched actions will be catched here  
   socket.on('action', (action) => {
+
     if(action.type == 'server/update-location'){
       if(action.payload.userType == 'provider' ){
         socket.type = 'provider';
         provider_location.updateProviderLocation( action.payload, socket.id );
       }
+      if(action.payload.userType == 'customer'){
+        socket.type = 'customer';
+        customer_location.updateCustomerLocation( action.payload, socket.id );
+        console.log(action.payload);
+        provider_location.returnNearbyProviders( action.payload ).then(data => {
+          socket.emit('action', {type:'GET_NEARBY_PROVIDERS', data:data});
+        });        
+      }
     }
-  })
+  });
 });
 
 

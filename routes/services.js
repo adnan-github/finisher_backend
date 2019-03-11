@@ -1,11 +1,11 @@
-// requirements for user model
+// requirements for customer model
 var express     = require('express');
 var passport    = require('passport');
 var bodyParser  = require('body-parser');
 
 // custom modules
 var servicesModel     = require('../models/services');
-var authenticate  = require('../middlewares/user_passport');
+var authenticate      = require('../middlewares/customer_passport');
 // services route settings
 var servicesRouter = express.Router();
 servicesRouter.use(bodyParser.json());
@@ -55,15 +55,15 @@ servicesRouter.get('/all', (req, res, next) => {
 });
 
 // services route for find one service
-servicesRouter.get('/:id', (req, res, next) => {
- 
-  servicesModel.findById({id: req.params.id},(err, services) => {
+servicesRouter.get('/service', (req, res, next) => {
+  servicesModel.findOne( {name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
     } else {
-        res.json({ success: true, message: 'ok', data:services});
+      console.log(service)
+        res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour }});
     }
   });
 });

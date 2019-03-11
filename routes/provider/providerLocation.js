@@ -1,4 +1,3 @@
-// requirements for user model
 var express     = require('express');
 var bodyParser  = require('body-parser');
 
@@ -7,30 +6,9 @@ var providerLocationModel   = require('../../models/providersLocation');
 var Validate      = require('../../validators/userValidation');
 var authenticate = require('../../middlewares/provider_passport');
 
-// user route settings
+// provider Location route settings
 var providerLocationRouter = express.Router();
 providerLocationRouter.use(bodyParser.json());
-
-
-
-providerLocationRouter.put("/providerLocationSocket/:id", function(req, res, next){
-	var io = req.app.io;
-	if(!req.body){
-		res.status(400);
-		res.json({
-			"error":"Bad data"
-		});
-	}else{
-		providerLocationModel.update({_id: req.params.id}, 
-			{$set: {socketId:req.body.socketId}}, function(err, updateDetails){
-				if(err){
-					res.send(err);
-				}else{
-					res.send(updateDetails);
-				}
-        });
-    }
-});
 
 //get nearby providers
 
@@ -40,7 +18,7 @@ providerLocationRouter.get("/providerLocation", function(req, res, next){
 				"$near":{
 					"$geometry":{
 						"type":"Point",
-						"coordinates": [parseFloat(req.query.longitude), parseFloat(req.query.latitude)]
+						"coordinates": [ parseFloat(req.query.longitude), parseFloat(req.query.latitude) ]
 					},
 					"$maxDistance":10000
 				}
@@ -55,7 +33,7 @@ providerLocationRouter.get("/providerLocation", function(req, res, next){
 });
 
 
-//Get Single provider and emit track by user to provider
+//Get Single provider and emit track by customer to provider
 
 providerLocationRouter.get("/providerLocation/:id", function(req, res, next){
 	var io = req.app.io;
@@ -68,7 +46,7 @@ providerLocationRouter.get("/providerLocation/:id", function(req, res, next){
     });
 });
 
-//Update Location by provider to user
+//Update Location by provider to customer
 providerLocationRouter.put("/providerLocation/:id", function(req, res, next){
     var io = req.app.io;
     var location = req.body;

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const PassportLocalMongoose = require('passport-local-mongoose');
 
-const usersSchema = new Schema({
+const customersSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -30,23 +30,7 @@ const usersSchema = new Schema({
     timestamps: true
 });
 
-usersSchema.plugin(PassportLocalMongoose);
-const usersModel = mongoose.model('users', usersSchema);
+customersSchema.plugin(PassportLocalMongoose);
+const customersModel = mongoose.model('customers', customersSchema);
 
-module.exports = usersModel;
-
-/*
-username: {
-        type: String,
-        unique: true,
-        required: true,
-        minlength: 5,
-        maxlength: 20
-    },
-    password: {
-        type: String,
-        required: true,
-        maxlength: 20,
-        minlength: 5
-    },
-*/
+module.exports = customersModel;

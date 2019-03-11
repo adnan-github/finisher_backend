@@ -9,26 +9,25 @@ const geoLocationSchema = new Schema({
     coordinates: {
         type: [Number],
         index: "2dsphere"
-    },
+    }
 });
 
-const providersLocationSchema = new Schema({
-    providerId: {
+const customersLocationSchema = new Schema({
+    customerId: {
         type: Schema.Types.ObjectId,
-        ref: 'providers'
+        ref: 'customers'
     },
     coordinate: {
         type: geoLocationSchema,
-        index: '2dsphere'
+        index: true
     },    
     socketId: String,
     status: String,
-    category: String,
-    availability: Boolean    
+    address: String
 }, {
     timestamps: true
 });
 
-const providerLocationModel = mongoose.model('providerLocations', providersLocationSchema);
+const customerLocationModel = mongoose.model('customerLocations', customersLocationSchema);
 
-module.exports = providerLocationModel;
+module.exports = customerLocationModel;

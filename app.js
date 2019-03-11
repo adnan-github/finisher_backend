@@ -7,10 +7,8 @@ var passport    = require('passport');
 var createError = require('http-errors');
 var dotenv      = require('dotenv').config({ debug: process.env.DEBUG });
 
-// var cookieParser  = require('cookie-parser');
-
 // routes
-var usersRouter         = require('./routes/customer/users');
+var customersRouter     = require('./routes/customer/customers');
 var indexRouter         = require('./routes/index');
 var servicesRouter      = require('./routes/services');
 var homeServicesRouter  = require('./routes/homeServices');
@@ -38,7 +36,7 @@ app.use(passport.initialize());
 
 
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/customers', customersRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/homeServices', homeServicesRouter);
 app.use('/api/agreements', agreementsRouter);

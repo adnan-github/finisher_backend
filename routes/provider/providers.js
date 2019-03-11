@@ -1,4 +1,3 @@
-// requirements for user model
 var express     = require('express');
 var bodyParser  = require('body-parser');
 var multer      = require('multer');
@@ -9,7 +8,7 @@ var providersModel    = require('../../models/providers');
 var Validate          = require('../../validators/userValidation');
 var authenticate      = require('../../middlewares/provider_passport');
 
-// user route settings
+// provider route settings
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
 
@@ -49,7 +48,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
   if(!isValid) {
     return res.status(400).json(errors);
   }
-  providersModel.register(new providersModel(req.body), req.body.password, (err, user) => {
+  providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -58,7 +57,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, status: 'you are successfully signed up', data: user });
+        res.json({ success: true, status: 'you are successfully signed up', data: provider });
       });
     }
   });
@@ -66,15 +65,14 @@ providersRouter.post('/signup', upload, (req, res, next) => {
 
 
   providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
-    // let token = authenticate.generateToken({_id: req.user._id});
     let token = authenticate.provider_generateToken({_id: req.user._id});
-    providersModel.findOne({ username: req.body.username }, function (err, user) {
+    providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
           res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'Unable to login'});
         }
-        else if (!user || user.password !== req.body.password ) { 
+        else if (!provider || provider.password !== req.body.password ) { 
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'wrong username or password'});
@@ -88,7 +86,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       });
   });
 
-  providersRouter.get('/providerInfo', (req, res, next) => {
+  providersRouter.get('/info', (req, res, next) => {
     const payload = req.headers.authorization;
     const token = payload.split(' ')[1];
     var decoded_payload = jwt_decode(token);

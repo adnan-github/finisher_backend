@@ -1,4 +1,3 @@
-// requirements for user model
 var express     = require('express');
 var bodyParser  = require('body-parser');
 
@@ -8,17 +7,13 @@ var providersModel = require('../../models/providers');
 var Validate      = require('../../validators/userValidation');
 var authenticate = require('../../middlewares/admin_passport');
 
-// user route settings
+// admin route settings
 var adminsRouter = express.Router();
 adminsRouter.use(bodyParser.json());
 
 adminsRouter.post('/signup', (req, res, next) => {
-  // const { errors, isValid } = Validate(req.body);
-
-  // if(!isValid) {
-  //   return res.status(400).json(errors);
-  // }
-  adminsModel.register(new adminsModel(req.body), req.body.password, (err, user) => {
+  
+  adminsModel.register(new adminsModel(req.body), req.body.password, (err, admin) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -36,14 +31,13 @@ adminsRouter.post('/signup', (req, res, next) => {
   adminsRouter.post('/login', authenticate.authenticatadmin, (req, res, next) => {
 
     let token = authenticate.admin_generateToken({_id: req.user._id});
-    // let token = authenticate.generateToken({_id: req.user._id});
-    adminsModel.findOne({ username: req.body.username }, function (err, user) {
+    adminsModel.findOne({ username: req.body.username }, function (err, admin) {
         if (err) {
           res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'Unable to login'});
         }
-        else if (!user || user.password !== req.body.password ) { 
+        else if (!admin || admin.password !== req.body.password ) { 
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'wrong username or password'});
@@ -57,7 +51,7 @@ adminsRouter.post('/signup', (req, res, next) => {
       });
   });
 
-  adminsRouter.get('/adminInfo', (req, res, next) => {
+  adminsRouter.get('/info', (req, res, next) => {
     const payload = req.headers.authorization;
     const token = payload.split(' ')[1];
     var decoded_payload = jwt_decode(token);

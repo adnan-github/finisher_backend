@@ -9,6 +9,7 @@ module.exports = {
         var longitude = parseFloat(payload.location.coords.longitude);
         ProvidersLocationModel.findOneAndUpdate({ providerId: ObjectId(payload.providerId) }, {
             providerId  : payload.providerId,
+            category    : payload.category,
             socketId    : _id,
             status      : 'connected',
             coordinate  : {
@@ -25,7 +26,7 @@ module.exports = {
         })
     },
     // it will set provider status to disconnected if he is not available
-    updateProviderStatus: ( socketId ) => {
+    updateProviderStatus:  ( socketId ) => {
 
         ProvidersLocationModel.findOneAndUpdate({ socketId: socketId }, {
             status: 'disconnected'
@@ -37,5 +38,27 @@ module.exports = {
                 return { success: true, message: 'successfully changed the status', data: doc }
             }            
         })
+    },
+    returnNearbyProviders: ( payload ) => {
+        var latitude = parseFloat(payload.geometry.lat);
+        var longitude = parseFloat(payload.geometry.lng);
+        var results = new Promise ( function ( resolve, reject ) {
+            ProvidersLocationModel.find({ status: "connected", category: payload.category,
+                "coordinate": {
+                    "$near": {
+                        "$geometry": {
+                            "type":"Point",
+                            "coordinates": [ parseFloat(longitude), parseFloat(latitude) ]
+                        },
+                        "$maxDistance":100000
+                    }
+                }
+            }).select('coordinate.coordinates').then( data => {
+                resolve(data);
+            }).catch( err => {
+                reject( err );
+            });
+        });  
+        return results; 
     }
 }

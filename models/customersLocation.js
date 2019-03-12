@@ -28,6 +28,7 @@ const customersLocationSchema = new Schema({
     timestamps: true
 });
 
+
 const customerLocationModel = mongoose.model('customerLocations', customersLocationSchema);
 
 module.exports = customerLocationModel;

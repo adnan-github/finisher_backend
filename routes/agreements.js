@@ -4,7 +4,8 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var agreementsModel     = require('../models/agreements');
-var authenticate  = require('../middlewares/customer_passport');
+var authenticate        = require('../middlewares/customer_passport');
+var customers_Location  = require('../socket_controllers/customer_location').populateCustomersRecord;
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
@@ -15,8 +16,7 @@ agreementsRouter.post('/initiate', (req, res, next) => {
 
   var io = req.app.io;
   var nearByProviders = req.body.nearByProviders;
-  console.log(req.body);
-
+  console.log(customers_Location(req.body.customer_id));
   // agreementsModel.create(new agreementsModel({
   //   customer_id       : req.body.customer_id,
   //   selected_service  : req.body.selected_service,

@@ -36,5 +36,9 @@ module.exports = {
                 return { success: true, message: 'successfully changed the status', data: doc }
             }            
         })
-    }
+    },
+    populateCustomersRecord: async ( id ) => {
+        var results = CustomersLocationModel.findById( id ).populate('customers').exec();
+        return results;
+    } 
 }

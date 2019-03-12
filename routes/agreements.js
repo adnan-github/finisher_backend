@@ -15,30 +15,31 @@ agreementsRouter.post('/initiate', (req, res, next) => {
 
   var io = req.app.io;
   var nearByProviders = req.body.nearByProviders;
+  console.log(req.body);
 
-  agreementsModel.create(new agreementsModel({
-    customer_id       : req.body.customer_id,
-    selected_service  : req.body.selected_service,
-    status            : "pending",
-    agreement_type    : req.body.agreement_type
-  }),(err, agreement) => {
-    if (err) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
-    } else {        
-      nearByProviders.forEach(provider => {
-        if( provider.socketId ){
-          let driver_channel = provider.socketId + 'provider_request';
-          io.emit( driver_channel , nearByProviders);
-        }
+  // agreementsModel.create(new agreementsModel({
+  //   customer_id       : req.body.customer_id,
+  //   selected_service  : req.body.selected_service,
+  //   status            : "pending",
+  //   agreement_type    : req.body.agreement_type
+  // }),(err, agreement) => {
+  //   if (err) {
+  //     res.statusCode = 500;
+  //     res.setHeader('Content-Type', 'application/json');
+  //     res.json({err: err});
+  //   } else {        
+  //     nearByProviders.forEach(provider => {
+  //       if( provider.socketId ){
+  //         let driver_channel = provider.socketId + 'provider_request';
+  //         io.emit( driver_channel , nearByProviders);
+  //       }
         
-      });
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({ success: true, status: 'agreement created successfully', agreement: agreement});
-    }
-  });
+  //     });
+  //     res.statusCode = 200;
+  //     res.setHeader('Content-Type', 'application/json');
+  //     res.json({ success: true, status: 'agreement created successfully', agreement: agreement});
+  //   }
+  // });
 });
 
 // agreements route for delete service

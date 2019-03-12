@@ -43,7 +43,7 @@ module.exports = {
         var latitude = parseFloat(payload.geometry.lat);
         var longitude = parseFloat(payload.geometry.lng);
         var results = new Promise ( function ( resolve, reject ) {
-            ProvidersLocationModel.find({ status: "connected", category: payload.category,
+            ProvidersLocationModel.find({ status: "connected",
                 "coordinate": {
                     "$near": {
                         "$geometry": {
@@ -53,7 +53,7 @@ module.exports = {
                         "$maxDistance":100000
                     }
                 }
-            }).select('coordinate.coordinates').then( data => {
+            }).select('coordinate.coordinates socketId').then( data => {
                 resolve(data);
             }).catch( err => {
                 reject( err );

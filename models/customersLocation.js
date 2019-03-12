@@ -19,7 +19,7 @@ const customersLocationSchema = new Schema({
     },
     coordinate: {
         type: geoLocationSchema,
-        index: true
+        index: '2dsphere'
     },    
     socketId: String,
     status: String,

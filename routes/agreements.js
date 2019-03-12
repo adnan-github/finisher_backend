@@ -16,7 +16,7 @@ agreementsRouter.post('/initiate', (req, res, next) => {
 
   var io = req.app.io;
   var nearByProviders = req.body.nearByProviders;
-  console.log(customers_Location(req.body.customer_id));
+  customers_Location(req.body.customer_id).then(data => console.log(data) );
   // agreementsModel.create(new agreementsModel({
   //   customer_id       : req.body.customer_id,
   //   selected_service  : req.body.selected_service,

@@ -16,8 +16,34 @@ agreementsRouter.post('/initiate', (req, res, next) => {
 
   var io = req.app.io;
   var nearByProviders = req.body.nearByProviders;
-  console.log(req.body.customer_id);
-  customers_Location(req.body.customer_id).then(data => console.log(data) );
+  console.log(req.body);
+  customers_Location(req.body.customer_id).then(data => {
+    let customer_object = {
+      name: data.customerId.name,
+      address: data.address,
+      phone: data.customerId.phone,
+      agreement_type: req.body.agreement_type
+    };
+    agreementsModel.create(new agreementsModel({
+      customer_id : req.body.customer_id,
+      selected_service: req.body.selected_service,
+      status: 'pending',
+      agreement_type: req.body.agreement_type,
+      socketId: data.socketId
+    }), (err, data ) => {
+      if ( err ){
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({err: err});
+      }
+      else {
+        res.json({ success: true, data});
+        nearByProviders.sockets.forEach( socketId => {
+            io.to(socketId).emit('action', { type: 'SERVICE_REQUEST', data: customer_object});
+        });
+      }
+    })
+  }).catch(err => res.json(err ));
   // agreementsModel.create(new agreementsModel({
   //   customer_id       : req.body.customer_id,
   //   selected_service  : req.body.selected_service,

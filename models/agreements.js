@@ -23,6 +23,9 @@ const agreemnetsSchema = new Schema({
     agreement_type: {
         type: String,
         required: true
+    },
+    customer_socket: {
+        type: String
     }
 }, {        
     timestamps: true

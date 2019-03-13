@@ -38,7 +38,7 @@ module.exports = {
         })
     },
     populateCustomersRecord: async ( id ) => {
-        var results = CustomersLocationModel.findById( id ).populate('customers').exec();
+        var results = CustomersLocationModel.findOne({ customerId: id } ).populate('customerId');
         return results;
     } 
 }

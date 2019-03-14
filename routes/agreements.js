@@ -13,8 +13,8 @@ agreementsRouter.use(bodyParser.json());
 
 // agreements route for new service
 agreementsRouter.post('/initiate', (req, res, next) => {
+  console.log( req.body );
 
-  var io = req.app.io;
   var nearByProviders = req.body.nearByProviders;
 
   customers_Location(req.body.customer_id).then( data => {
@@ -24,7 +24,8 @@ agreementsRouter.post('/initiate', (req, res, next) => {
           name            : data.customerId.name,
           address         : data.address,
           phone           : data.customerId.phone,
-          agreement_type  : req.body.agreement_type
+          agreement_type  : req.body.agreement_type,
+          category        : req.body.selected_service
     };
 
     // initiating the agreement
@@ -39,11 +40,16 @@ agreementsRouter.post('/initiate', (req, res, next) => {
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
         res.json({err: err});
+        console.log(err)
       }
       else {
-        res.json({ success: true, data});
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        customer_object.agreement_id = data._id;
+        res.json({ success: true, data: data._id, message: 'contract initiated'});
         nearByProviders.sockets.forEach( socketId => {
-            io.to(socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
+          console.log('here')
+            io.sockets.to(socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
         });
       }
     }); // agreement creation request ends here 
@@ -91,6 +97,18 @@ agreementsRouter.get('/:id', (req, res, next) => {
           res.json({ success: true, message: 'ok', data:agreements});
       }
     });
+  });
+
+
+  // route to confirm the agreement between provider and customer
+  agreementsRouter.post('/confirmAgreement', ( req, res ) => {
+      let payload = req.body;
+      agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , {
+        provider_Id : payload.provider_Id,
+        status      : 'accepted'
+       }, (err, obj ) => {
+
+       });
   });
 
 module.exports = agreementsRouter;

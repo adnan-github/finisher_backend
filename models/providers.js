@@ -8,7 +8,7 @@ const providerSchema = new Schema({
         type: String,
         required: true
     },
-    phone: {
+    email: {
         type: String,
         required: true
     },
@@ -35,6 +35,8 @@ const providerSchema = new Schema({
 });
 
 providerSchema.plugin(PassportLocalMongoose);
+
+
 const providerModel = mongoose.model('providers', providerSchema);
 
 module.exports = providerModel;

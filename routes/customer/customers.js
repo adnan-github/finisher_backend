@@ -18,9 +18,11 @@ customerRouter.get('/', function (req, res, next) {
 
 // signup route for customers
 customerRouter.post('/signup', (req, res, next) => {
-  
+  console.log(req.body);
   customerModel.register(new customerModel(req.body), req.body.password, (err, Customer) => {
+
     if (err) {
+      console.log(err);
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});

@@ -53,6 +53,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
+      console.log(errphonprovir)
     } else {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;
@@ -103,6 +104,46 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       res.json({provider: provider , message: "provider info"});
     });
   });
+
+  providersRouter.get('/checkphone', ( req, res, next ) => {
+    const data = req.query;
+    console.log(data)
+    providersModel.find({ phone: data.phone }, (err, user ) => {
+      if ( user.phone ){
+        res.status = 200;
+        res.json({
+          success : true,
+          message : 'phone number correct'
+        });
+      } else {
+        console.log(err)
+        res.status = 404;
+        res.json({
+          success : false,
+          message : 'phone number not found for the associated account'
+        });
+      }
+    });
+  });
   
+  providersRouter.put('/updatepassword', ( req, res, next ) => {
+    const data = req.body;
+    providersModel.findByIdAndUpdate( data.provider_id, { password  : data.password }, (err, user ) => {
+      if ( user._id ){
+        res.status = 200;
+        res.json({
+          success : true,
+          message : 'password updated',
+          provider_id : user._id
+        });
+      } else {
+        res.status = 404;
+        res.json({
+          success : false,
+          message : 'unable to update password'
+        });
+      }
+    }).select('_id');
+  });
  
 module.exports = providersRouter;

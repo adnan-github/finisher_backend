@@ -7,8 +7,6 @@
 var app   = require('../app');
 var debug = require('debug')('confusion:server');
 var http  = require('http');
-var https = require('https');
-var fs    = require('fs');
 
 var provider_location = require('../socket_controllers/provider_location');
 var customer_location = require('../socket_controllers/customer_location');
@@ -29,7 +27,7 @@ var io      = require('socket.io').listen(server);
 /** 
  * Listen on provided port, on all network interfaces.
  */
-
+global.io = io;
 app.io = io.sockets.on('connection', (socket) => {
   console.log(`Socket ${socket.id} connected.`);
   socket.on('disconnect', () => {

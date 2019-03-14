@@ -51,6 +51,7 @@ app.set('view engine', 'jade');
 
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'idImages')));
 
 
 // catch 404 and forward to error handler

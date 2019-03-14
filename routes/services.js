@@ -51,21 +51,23 @@ servicesRouter.get('/all', (req, res, next) => {
     } else {
         res.json({ success: true, message: 'ok', data:services});
     }
-  });
+  }).select('name perHour -_id');
 });
 
 // services route for find one service
 servicesRouter.get('/service', (req, res, next) => {
+  console.log('----------->', req.query);
   servicesModel.findOne( {name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
     } else {
-      console.log(service)
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour }});
     }
-  });
+  }).select('name perHour -_id');
 });
 
 module.exports = servicesRouter;

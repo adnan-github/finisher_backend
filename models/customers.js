@@ -8,13 +8,11 @@ const customersSchema = new Schema({
         type: String,
         required: true
     },
-    phone: {
-        type: String,
-        required: true
+    email: {
+        type: String
     },
     cnic: {
-        type: String, 
-        required: true
+        type: String
     },
     username: {
         type: String,

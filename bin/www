@@ -23,23 +23,28 @@ app.set('securePort', port + 443);
  */
 
 var server  = http.createServer(app);
-var io      = require('socket.io').listen(server);
+var io      = require('socket.io').listen(server, {
+  pingTimeout: 60000,
+  pingInterval: 50000
+});
+io.set('transports', ['websocket']);
 /** 
  * Listen on provided port, on all network interfaces.
  */
 global.io = io;
+
 app.io = io.sockets.on('connection', (socket) => {
   console.log(`Socket ${socket.id} connected.`);
   socket.on('disconnect', () => {
     if(socket.type == 'provider'){
-      console.log('disconnected provider');
+      console.log('disconnected provider', socket.id);
       provider_location.updateProviderStatus( socket.id );
     }
-    if( socket.type == 'customer' ){
+    else if( socket.type == 'customer' ){
       console.log('disconnected customer');
       customer_location.updateCustomerStatus( socket.id );
     }
-    console.log('disconnected without type')
+   else console.log('disconnected without type')
   });
 
   // all redux dispatched actions will be catched here  

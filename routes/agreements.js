@@ -103,12 +103,13 @@ agreementsRouter.get('/:id', (req, res, next) => {
   // route to confirm the agreement between provider and customer
   agreementsRouter.post('/confirmAgreement', ( req, res ) => {
       let payload = req.body;
-      agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , {
+      console.log('provider accepted', payload);
+      agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , { $set: {
         provider_Id : payload.provider_Id,
-        status      : 'accepted'
+        status      : 'accepted' }
        }, (err, obj ) => {
-
-       });
+        console.log('agreement initiated', obj);
+       }).select('customer_id');
   });
 
 module.exports = agreementsRouter;

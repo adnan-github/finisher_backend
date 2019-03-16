@@ -53,7 +53,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
-      console.log(errphonprovir)
+      console.log(err)
     } else {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;

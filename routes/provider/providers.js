@@ -36,9 +36,12 @@ const Storage = multer.diskStorage({
 const upload = multer({
   storage: Storage,
   limits:{fileSize: 100000000}
-}).single('cnic_front')
+}).fields([{ name: 'cnic_front', maxCount: 1}, { name: 'cnic_back', maxCount: 1}]);
+
 providersRouter.post('/cnicupload', upload, (req, res) => {
       console.log(req.body, req.file);
+      res.statusCode = 200;
+      res.json({ success: true, message: 'images uploaded successfully'});
 });
 
 providersRouter.post('/signup', upload, (req, res, next) => {

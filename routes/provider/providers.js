@@ -2,6 +2,7 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 var multer      = require('multer');
 var jwt_decode  = require('jwt-decode');
+var googleStore = require('multer-google-storage');
 
 // custom modules
 var providersModel    = require('../../models/providers');
@@ -34,9 +35,22 @@ const Storage = multer.diskStorage({
 // }])
 
 const upload = multer({
-  storage: Storage,
-  limits:{fileSize: 100000000}
-}).fields([{ name: 'cnic_front', maxCount: 1}, { name: 'cnic_back', maxCount: 1}]);
+  storage : googleStore.storageEngine({
+    projectId   : 'finisherpro-1550657571178',
+    bucket      :  'finisher-images',
+    keyFilename :  '../../google_bucket.json',
+    maxRetries  : 2,
+    autoRetry   : true
+  }),
+  limits  :{fileSize: 100000000}
+}).fields([
+  { name      : 'cnic_front', 
+    maxCount  : 1 
+  }, 
+  { name      : 'cnic_back', 
+    maxCount  : 1
+  }
+]);
 
 providersRouter.post('/cnicupload', upload, (req, res) => {
       console.log(req.body, req.file);

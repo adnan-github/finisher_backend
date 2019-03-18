@@ -2,7 +2,8 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 var multer      = require('multer');
 var jwt_decode  = require('jwt-decode');
-var googleStore = require('multer-google-storage');
+var fs          = require('fs');
+var { Storage } = require('@google-cloud/storage');
 
 // custom modules
 var providersModel    = require('../../models/providers');
@@ -13,46 +14,56 @@ var authenticate      = require('../../middlewares/provider_passport');
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
 
-const Storage = multer.diskStorage({
+var storage = new Storage({
+  projectId   : process.env.GCLOUD_PROJECT,
+  keyFilename : process.env.GCS_KEYFILE,
+  keyFile     : process.env.GCS_KEYFILE
+})
+
+var my_bucket = storage.bucket(process.env.GCS_BUCKET)
+
+
+const multerStorage = multer.diskStorage({
   destination(req, file, callback) {
-    callback(null, './idImages')
+    callback(null, './cnic_images')
   },
   filename(req, file, callback) {
     console.log(file, "imag")
-    callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`)
+    callback(null, `${file.originalname}`)
   },
 });
 
-// const upload = multer({
-//   storage: Storage,
-//   limits:{fileSize: 100000000},
-// }).fields([{
-//   name: 'cnic_front',
-//   maxCount: 1
-// }, {
-//   name: 'cnic_back',
-//   maxCount: 1
-// }])
-
 const upload = multer({
-  storage : googleStore.storageEngine({
-    projectId   : 'finisherpro-1550657571178',
-    bucket      :  'finisher-images',
-    keyFilename :  '../../google_bucket.json',
-    maxRetries  : 2,
-    autoRetry   : true
-  }),
-  limits  :{fileSize: 100000000}
-}).fields([
-  { name      : 'cnic_front', 
-    maxCount  : 1 
-  }, 
-  { name      : 'cnic_back', 
-    maxCount  : 1
-  }
-]);
+  storage: Storage,
+  limits:{fileSize: 100000000},
+}).fields([{
+  name: 'cnic_front',
+  maxCount: 1
+}, {
+  name: 'cnic_back',
+  maxCount: 1
+}]);
 
-providersRouter.post('/cnicupload', upload, (req, res) => {
+providersRouter.post('/cnicupload', upload, (req, res, next) => {
+
+    fs.readdir('../../cnic_images', (err, files) => {
+      if(err) {
+        res.statusCode = 400;
+        res.json({ success: false, message: 'unable to upload images to google cloud'});
+        next();
+      }
+      files.forEach( ( file, index ) => {
+        console.log(file);
+        my_bucket.upload(file, ( err, file) => {
+          if (err) {
+            console.log(err);
+          } else {
+            let publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${file.metadata.name}`
+            console.log(publicUrl);
+          }
+        })
+      });
+    });
       console.log(req.body, req.file);
       res.statusCode = 200;
       res.json({ success: true, message: 'images uploaded successfully'});
@@ -106,8 +117,8 @@ providersRouter.post('/signup', upload, (req, res, next) => {
 
   providersRouter.get('/info', (req, res, next) => {
     const payload = req.headers.authorization;
-    const token = payload.split(' ')[1];
-    var decoded_payload = jwt_decode(token);
+    const token   = payload.split(' ')[1];
+    const decoded_payload = jwt_decode(token);
     _id = (decoded_payload._id);
     providersModel.findById(_id, function(err, provider){
       if(err){

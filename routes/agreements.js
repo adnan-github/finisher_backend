@@ -13,13 +13,10 @@ agreementsRouter.use(bodyParser.json());
 
 // agreements route for new service
 agreementsRouter.post('/initiate', (req, res, next) => {
-  console.log( req.body );
 
   var nearByProviders = req.body.nearByProviders;
-
   customers_Location(req.body.customer_id).then( data => {
 
-    // this object will be sent with socket action to the provider
     let customer_object = {
           name            : data.customerId.name,
           address         : data.address,
@@ -36,11 +33,11 @@ agreementsRouter.post('/initiate', (req, res, next) => {
         agreement_type    : req.body.agreement_type,
         socketId          : data.socketId
     }), (err, data ) => {
+      console.log('------> err', err, '----------> data ', data);
       if ( err ){
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
         res.json({err: err});
-        console.log(err)
       }
       else {
         res.statusCode = 200;
@@ -108,8 +105,18 @@ agreementsRouter.get('/:id', (req, res, next) => {
         provider_Id : payload.provider_Id,
         status      : 'accepted' }
        }, (err, obj ) => {
-        console.log('agreement initiated', obj);
-       }).select('customer_id');
+        customers_Location(obj.customer_id).then( data => {
+          res.status = 200;
+          res.json({ success: true, data: data});
+          io.sockets.to(data.socketId).emit('action', {
+            type    : 'AGREEMENT_ACCEPTED',
+            payload : req.body 
+          });
+        }).catch(err => {
+          res.status = 404;
+          res.json({ success: false, error: err});
+        })
+       }).select('customer_id -_id');
   });
 
 module.exports = agreementsRouter;

@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const agreemnetsSchema = new Schema({
+const agreementsSchema = new Schema({
     customer_id: {
         type: Schema.Types.ObjectId,
         required: true,
@@ -31,6 +31,6 @@ const agreemnetsSchema = new Schema({
     timestamps: true
     });
 
-const agreemnetsModel = mongoose.model('agreemnets', agreemnetsSchema);
+const agreementsModel = mongoose.model('agreements', agreementsSchema);
 
-module.exports = agreemnetsModel;
+module.exports = agreementsModel;

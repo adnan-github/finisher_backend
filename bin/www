@@ -24,8 +24,8 @@ app.set('securePort', port + 443);
 
 var server  = http.createServer(app);
 var io      = require('socket.io').listen(server, {
-  pingTimeout: 60000,
-  pingInterval: 50000
+  pingTimeout: 30000,
+  pingInterval: 30000
 });
 io.set('transports', ['websocket']);
 /** 

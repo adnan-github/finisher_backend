@@ -38,7 +38,12 @@ module.exports = {
         })
     },
     populateCustomersRecord: async ( id ) => {
+        console.log('here', id)
         var results = CustomersLocationModel.findOne({ customerId: id } ).populate('customerId');
         return results;
-    } 
+    },
+    populateCustomerSocketId: async (id) => {
+        var results = await CustomersLocationModel.findOne({ customerId: id });
+        return results;
+    }
 }

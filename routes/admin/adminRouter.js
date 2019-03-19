@@ -96,8 +96,9 @@ adminsRouter.post('/signup', (req, res, next) => {
         res.json({ success: false , message: "No provider found with provider id", error: err})
         return;
       }
+      delete provider.password;
       res.json({ success: true, provider: provider , message: "provider info"});
-    }).select('-password -createdAt -updatedAt');
+    });
   });
 
   adminsRouter.post('/approveRequest', (req, res, next) => {

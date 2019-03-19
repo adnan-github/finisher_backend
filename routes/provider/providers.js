@@ -58,8 +58,8 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
       }
       // read all the files in images folder and upload it to google cloud storage one by one    
       files.forEach( ( file, index ) => {
-        
-        const file_path = 'cnic_images/'+ file;
+        if( index > 0) {
+          const file_path = 'cnic_images/'+ file;
         my_bucket.upload(file_path, ( err, file) => {
           if (err) {
             res.statusCode = 400;
@@ -78,6 +78,7 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
             }
           }
         })
+        }
       });
     });
 });

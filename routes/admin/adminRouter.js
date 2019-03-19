@@ -99,6 +99,18 @@ adminsRouter.post('/signup', (req, res, next) => {
       res.json({ success: true, provider: provider , message: "provider info"});
     }).select('-password -createdAt -updatedAt');
   });
+
+  adminsRouter.put('/approveRequest', (req, res, next) => {
+    const payload = req.body;
+    providersModel.findByIdAndUpdate(payload.id, { isVerified: payload.isVerified }, ( err, response ) => {
+      if ( err ){
+        res.statusCode = 500;
+        res.json({ success: false, message: 'unable to verify the provider', error: err.message });
+      } else {
+        res.json({ success: true, message: 'provider has been approved', data: response });
+      }
+    }).select('isVerified -_id');
+  });
   
  
 module.exports = adminsRouter;

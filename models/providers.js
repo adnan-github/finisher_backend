@@ -29,6 +29,10 @@ const providerSchema = new Schema({
     profession: {
         type: String,
         // requ/ired: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

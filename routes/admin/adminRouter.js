@@ -53,8 +53,8 @@ adminsRouter.post('/signup', (req, res, next) => {
 
   adminsRouter.get('/info', (req, res, next) => {
     const payload = req.headers.authorization;
-    const token = payload.split(' ')[1];
-    var decoded_payload = jwt_decode(token);
+    const token   = payload.split(' ')[1];
+    const decoded_payload = jwt_decode(token);
     _id = (decoded_payload._id);
     adminsModel.findById(_id, function(err, admin){
       if(err){
@@ -69,7 +69,7 @@ adminsRouter.post('/signup', (req, res, next) => {
     });
   });
 
-  adminsRouter.get('/providersList', (req, res, next) => {
+  adminsRouter.get('/requestList', (req, res, next) => {
     
     providersModel.find({}, function(err, admin){
       if(err){
@@ -82,6 +82,22 @@ adminsRouter.post('/signup', (req, res, next) => {
       }
       res.json({admin: admin , message: "admin info"});
     });
+  });
+
+  adminsRouter.get('/request', (req, res, next) => {
+    console.log(req.params, req.query)
+    providersModel.findById({_id: req.query.id }, function(err, provider){
+      if(err){
+        res.statusCode = 400;
+        res.json({ success: false , message: "Could not find provider", error: err.name })
+        return;
+      } else if(!provider) {
+        const err = new Error(' no provider found');
+        res.json({ success: false , message: "No provider found with provider id", error: err})
+        return;
+      }
+      res.json({ success: true, provider: provider , message: "provider info"});
+    }).select('-password -createdAt -updatedAt');
   });
   
  

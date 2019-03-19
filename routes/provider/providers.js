@@ -3,6 +3,7 @@ var bodyParser  = require('body-parser');
 var multer      = require('multer');
 var jwt_decode  = require('jwt-decode');
 var fs          = require('fs');
+var path        = require('path');
 var { Storage } = require('@google-cloud/storage');
 
 // custom modules
@@ -13,12 +14,14 @@ var authenticate      = require('../../middlewares/provider_passport');
 // provider route settings
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
+var files_url     = [], 
+    errors_array  = [];
 
 var storage = new Storage({
   projectId   : process.env.GCLOUD_PROJECT,
   keyFilename : process.env.GCS_KEYFILE,
   keyFile     : process.env.GCS_KEYFILE
-})
+});
 
 var my_bucket = storage.bucket(process.env.GCS_BUCKET)
 
@@ -28,13 +31,12 @@ const multerStorage = multer.diskStorage({
     callback(null, './cnic_images')
   },
   filename(req, file, callback) {
-    console.log(file, "imag")
     callback(null, `${file.originalname}`)
   },
 });
 
 const upload = multer({
-  storage: Storage,
+  storage: multerStorage,
   limits:{fileSize: 100000000},
 }).fields([{
   name: 'cnic_front',
@@ -44,29 +46,40 @@ const upload = multer({
   maxCount: 1
 }]);
 
-providersRouter.post('/cnicupload', upload, (req, res, next) => {
+providersRouter.post('/cnicupload', upload, (req, res) => {
 
-    fs.readdir('../../cnic_images', (err, files) => {
+    
+    fs.readdir('./cnic_images', (err, files) => {
+      // if error in reading images directory
       if(err) {
         res.statusCode = 400;
-        res.json({ success: false, message: 'unable to upload images to google cloud'});
-        next();
+        res.json({ success : false, message : 'unable to upload images', error   : err })
+        console.log(err)
       }
+      // read all the files in images folder and upload it to google cloud storage one by one    
       files.forEach( ( file, index ) => {
-        console.log(file);
-        my_bucket.upload(file, ( err, file) => {
+        
+        const file_path = 'cnic_images/'+ file;
+        my_bucket.upload(file_path, ( err, file) => {
           if (err) {
-            console.log(err);
+            res.statusCode = 400;
+            res.json({ success : false, message : 'unable to upload images', error   : err });
           } else {
-            let publicUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${file.metadata.name}`
-            console.log(publicUrl);
+            let publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${file.metadata.name}`;
+            files_url.push(publicUrl);
+            if(file.metadata.name){
+              fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
+                errors_array.push(err);
+              });  
+            }
+            if(files_url.length == 2){
+              res.statusCode = 200;
+              res.json({ success : true, message : 'successfully uploaded images', data : files_url })
+            }
           }
         })
       });
     });
-      console.log(req.body, req.file);
-      res.statusCode = 200;
-      res.json({ success: true, message: 'images uploaded successfully'});
 });
 
 providersRouter.post('/signup', upload, (req, res, next) => {
@@ -80,8 +93,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
-      console.log(err)
+      res.json({success: false, message: 'unable to signup', error: err});
     } else {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;

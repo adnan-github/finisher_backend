@@ -41,7 +41,7 @@ app.use('/api/services', servicesRouter);
 app.use('/api/homeServices', homeServicesRouter);
 app.use('/api/agreements', agreementsRouter);
 app.use('/api/providers', providersRouter);
-app.use('/api/admins', adminRouter);
+app.use('/api/admin', adminRouter);
 
 mongoConnect();
 

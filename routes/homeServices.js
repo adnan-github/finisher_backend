@@ -66,5 +66,17 @@ homeServicesRouter.get('/:id', (req, res, next) => {
       }
     });
 });
+homeServicesRouter.delete('/:id', (req, res, next) => {
+ 
+  homeServicesModel.deleteOne({id: req.params.id},(err, homeServices) => {
+    if (err) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({err: err});
+    } else {
+        res.json({ success: true, message: 'ok', data:homeServices});
+    }
+  });
+});
 
 module.exports = homeServicesRouter;

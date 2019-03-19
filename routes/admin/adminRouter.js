@@ -102,14 +102,14 @@ adminsRouter.post('/signup', (req, res, next) => {
 
   adminsRouter.put('/approveRequest', (req, res, next) => {
     const payload = req.body;
-    providersModel.findByIdAndUpdate(payload.id, { isVerified: payload.isVerified }, ( err, response ) => {
-      if ( err ){
+    providersModel.findByIdAndUpdate(payload.id, { $set: payload }, ( err, response ) => {
+      if ( err || !response.isVerified ){
         res.statusCode = 500;
-        res.json({ success: false, message: 'unable to verify the provider', error: err.message });
+        res.json({ success: false, message: 'provider has not been verified', error: (err.message || 'provider verification is still in process') });
       } else {
-        res.json({ success: true, message: 'provider has been approved', data: response });
+        res.json({ success: true, message: 'provider has been updated', data: response });
       }
-    }).select('isVerified -_id');
+    }).select('-password -_id -createdAt -updatedAt');
   });
   
  

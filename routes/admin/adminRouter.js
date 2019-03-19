@@ -100,12 +100,13 @@ adminsRouter.post('/signup', (req, res, next) => {
     }).select('-password -createdAt -updatedAt');
   });
 
-  adminsRouter.put('/approveRequest', (req, res, next) => {
+  adminsRouter.post('/approveRequest', (req, res, next) => {
     const payload = req.body;
     providersModel.findByIdAndUpdate(payload.id, { $set: payload }, ( err, response ) => {
       if ( err || !response.isVerified ){
         res.statusCode = 500;
-        res.json({ success: false, message: 'provider has not been verified', error: (err.message || 'provider verification is still in process') });
+        console.log(err);
+        res.json({ success: false, message: 'provider has not been verified', error: ((err.message) ? (err.message) : 'provider verification is still in process') });
       } else {
         res.json({ success: true, message: 'provider has been updated', data: response });
       }

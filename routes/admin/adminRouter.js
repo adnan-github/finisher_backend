@@ -106,7 +106,7 @@ adminsRouter.post('/signup', (req, res, next) => {
       if ( err || !response.isVerified ){
         res.statusCode = 500;
         console.log(err);
-        res.json({ success: false, message: 'provider has not been verified', error: ((err.message) ? (err.message) : 'provider verification is still in process') });
+        res.json({ success: false, message: 'provider has not been verified' });
       } else {
         res.json({ success: true, message: 'provider has been updated', data: response });
       }

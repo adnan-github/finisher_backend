@@ -186,4 +186,10 @@ providersRouter.post('/signup', upload, (req, res, next) => {
     }).select('_id');
   });
  
+  providersRouter.delete('/deleteAll', ( req, res ) => {
+    providersModel.deleteMany({}, (err, ress) => {
+      res.json({ success: true, message: 'deleted all the providers'});
+    })
+  });
+
 module.exports = providersRouter;

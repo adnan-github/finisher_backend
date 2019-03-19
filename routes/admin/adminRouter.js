@@ -104,8 +104,8 @@ adminsRouter.post('/signup', (req, res, next) => {
     const payload = req.body;
     providersModel.findByIdAndUpdate(payload.id, { $set: payload }, ( err, response ) => {
       if ( err || !response.isVerified ){
-        res.statusCode = 500;
         console.log(err);
+        res.statusCode = 500;        
         res.json({ success: false, message: 'provider has not been verified' });
       } else {
         res.json({ success: true, message: 'provider has been updated', data: response });

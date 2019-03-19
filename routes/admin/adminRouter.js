@@ -96,23 +96,25 @@ adminsRouter.post('/signup', (req, res, next) => {
         res.json({ success: false , message: "No provider found with provider id", error: err})
         return;
       }
-      delete provider.password;
+      else {
+        delete provider.password;
       res.json({ success: true, provider: provider , message: "provider info"});
+      }
     });
   });
 
   adminsRouter.post('/approveRequest', (req, res, next) => {
     const payload = req.body;
     providersModel.findByIdAndUpdate(payload.id, { $set: payload }, ( err, response ) => {
-      if ( err || !response.isVerified ){
+      if ( err ){
         console.log(err);
         res.statusCode = 500;        
         res.json({ success: false, message: 'provider has not been verified' });
       } else {
+        res.statusCode = 200;
         res.json({ success: true, message: 'provider has been updated', data: response });
       }
     }).select('-password -_id -createdAt -updatedAt');
-    next();
   });
   
  

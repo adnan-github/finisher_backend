@@ -111,6 +111,7 @@ adminsRouter.post('/signup', (req, res, next) => {
         res.json({ success: true, message: 'provider has been updated', data: response });
       }
     }).select('-password -_id -createdAt -updatedAt');
+    next();
   });
   
  

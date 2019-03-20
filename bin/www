@@ -15,7 +15,7 @@ var customer_location = require('../socket_controllers/customer_location');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort( process.env.PORT || process.env.LOCAL_PORT_DEV || 4000 );
+var port = normalizePort( process.env.PORT || process.env.LOCAL_PORT_DEV );
 app.set('port', port);                    
 app.set('securePort', port + 443);
 /**

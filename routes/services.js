@@ -2,7 +2,7 @@
 var express     = require('express');
 var passport    = require('passport');
 var bodyParser  = require('body-parser');
-
+var ObjectId    = require('mongoose').Types.ObjectId;
 // custom modules
 var servicesModel     = require('../models/services');
 var authenticate      = require('../middlewares/customer_passport');
@@ -26,9 +26,10 @@ servicesRouter.post('/addNew', (req, res, next) => {
 });
 
 // services route for delete service
-servicesRouter.delete('/remove', (req, res, next) => {
+servicesRouter.delete('/deleteService', (req, res, next) => {
 
-  servicesModel.deleteOne(req.body,(err) => {
+  servicesModel.deleteOne({ _id: ObjectId(req.query.id)}, (err, user) => {
+    console.log('here');
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -51,7 +52,7 @@ servicesRouter.get('/all', (req, res, next) => {
     } else {
         res.json({ success: true, message: 'ok', data:services});
     }
-  }).select('name perHour -_id');
+  }).select('name perHour');
 });
 
 // services route for find one service
@@ -67,6 +68,19 @@ servicesRouter.get('/service', (req, res, next) => {
         res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour }});
     }
   }).select('name perHour -_id');
+});
+
+servicesRouter.put('/updateService', ( req, res ) => {
+  console.log( '--------', req.body)
+  servicesModel.findByIdAndUpdate( { _id : ObjectId(req.body.id)}, { $set: req.body }, { new: true }, ( error, service ) => {
+    if( error ) {
+      res.statusCode = 500;
+      res.json({ success: false, message: 'Error in updating service', error: error });
+    } else {
+      res.statusCode = 200;
+      res.json({ success: true, message: 'updated service successfully', data: service })
+    }
+  }).select('name -_id perHour');
 });
 
 module.exports = servicesRouter;

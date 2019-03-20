@@ -65,7 +65,7 @@ servicesRouter.get('/service', (req, res, next) => {
     } else {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour }});
+        res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour, id: service._id }});
     }
   }).select('name perHour _id');
 });

@@ -72,7 +72,7 @@ servicesRouter.get('/service', (req, res, next) => {
 
 servicesRouter.put('/updateService', ( req, res ) => {
   console.log( '--------', req.body)
-  servicesModel.findByIdAndUpdate( { _id : ObjectId(req.body.id)}, { $set: req.body }, { new: true }, ( error, service ) => {
+  servicesModel.findByIdAndUpdate( { _id : ObjectId(req.body.id)}, { $set: { perHour: req.body.perHour } }, { new: true }, ( error, service ) => {
     if( error ) {
       res.statusCode = 500;
       res.json({ success: false, message: 'Error in updating service', error: error });

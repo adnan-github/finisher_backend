@@ -77,4 +77,18 @@ customerRouter.get('/info', (req, res, next) => {
   });
 });
 
+customerRouter.get('/all', (req, res) => {
+  customerModel.find({}, ( err, customers ) => {
+    if ( customers) {
+      res.statusCode = 200;
+      res.json({ success: true, message: 'customers retrieved successfully', customers: customers});
+    } else {
+      res.statusCode = 404;
+      res.json({ success = false, message: 'no customers found'});
+    }
+  });
+})
+
+
+
 module.exports = customerRouter;

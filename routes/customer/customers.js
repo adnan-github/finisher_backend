@@ -84,7 +84,7 @@ customerRouter.get('/all', (req, res) => {
       res.json({ success: true, message: 'customers retrieved successfully', customers: customers});
     } else {
       res.statusCode = 404;
-      res.json({ success = false, message: 'no customers found'});
+      res.json({ success : false, message: 'no customers found'});
     }
   });
 })

@@ -119,6 +119,11 @@ providersRouter.post('/signup', upload, (req, res, next) => {
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'wrong username or password'});
         }
+        else if (provider.isVerified == false ){
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({ success: false, message: 'your account is not verified'});
+        }
         else {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
@@ -141,8 +146,11 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       } else if(!provider) {
         res.json({ success: false , message: "provider not found"})
         return;
+      } 
+      else {
+        res.json({provider: provider , message: "provider info"});
       }
-      res.json({provider: provider , message: "provider info"});
+      
     });
   });
 

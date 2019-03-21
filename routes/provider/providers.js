@@ -90,11 +90,7 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
 
 providersRouter.post('/signup', upload, (req, res, next) => {
 
-  const { errors, isValid } = Validate(req.body);
 
-  if(!isValid) {
-    return res.status(400).json(errors);
-  }
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
       console.log(err);

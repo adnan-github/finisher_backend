@@ -14,8 +14,7 @@ var authenticate      = require('../../middlewares/provider_passport');
 // provider route settings
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
-var files_url     = [], 
-    errors_array  = [];
+
 
 var storage = new Storage({
   projectId   : process.env.GCLOUD_PROJECT,
@@ -48,8 +47,10 @@ const upload = multer({
 
 providersRouter.post('/cnicupload', upload, (req, res) => {
 
-    
+  var files_url     = [], 
+  errors_array  = [];
     fs.readdir('./cnic_images', (err, files) => {
+
       // if error in reading images directory
       if(err) {
         res.statusCode = 400;
@@ -58,7 +59,9 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
       }
       // read all the files in images folder and upload it to google cloud storage one by one    
       files.forEach( ( file, index ) => {
-        if( index > 0) {
+        console.log(file);
+        if( file.split('.')[1] == 'jpeg' ) {
+          console.log('here');
           const file_path = 'cnic_images/'+ file;
         my_bucket.upload(file_path, ( err, file) => {
           if (err) {
@@ -70,11 +73,11 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
             if(file.metadata.name){
               fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
                 errors_array.push(err);
-              });  
-            }
-            if(files_url.length == 2){
-              res.statusCode = 200;
-              res.json({ success : true, message : 'successfully uploaded images', data : files_url })
+              });
+              if(files_url.length == 2){
+                res.statusCode = 200;
+                res.json({ success : true, message : 'successfully uploaded images', data : files_url })
+              }  
             }
           }
         })
@@ -92,6 +95,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
   }
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
+      console.log(err);
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({success: false, message: 'unable to signup', error: err});
@@ -129,6 +133,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
+
         }
       });
   });

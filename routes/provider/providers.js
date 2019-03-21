@@ -94,7 +94,6 @@ providersRouter.post('/signup', upload, (req, res, next) => {
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
       console.log(err);
-      res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({success: false, message: 'unable to signup', error: err});
     } else {

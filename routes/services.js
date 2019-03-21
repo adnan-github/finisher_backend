@@ -56,7 +56,7 @@ servicesRouter.get('/all', (req, res, next) => {
 });
 
 // services route for find one service
-servicesRouter.get('/service', (req, res, next) => {
+servicesRouter.get('/adminService', (req, res, next) => {
   servicesModel.findOne( { name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;
@@ -68,6 +68,20 @@ servicesRouter.get('/service', (req, res, next) => {
         res.json({ success: true, message: 'got the rates', service: service});
     }
   }).select('name perHour _id');
+});
+
+servicesRouter.get('/service', (req, res, next) => {
+  servicesModel.findOne( { name: req.query.service_name},(err, service) => {
+    if (err) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({err: err});
+    } else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+        res.json({ success: true, message: 'got the rates', data: { service: { service_name: service.name, service_rate: service.perHour}}});
+    }
+  }).select('name perHour -_id');
 });
 
 servicesRouter.put('/updateService', ( req, res ) => {

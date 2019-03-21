@@ -11,6 +11,8 @@ var providersModel    = require('../../models/providers');
 var Validate          = require('../../validators/userValidation');
 var authenticate      = require('../../middlewares/provider_passport');
 
+var providersLocationModel = require('../../models/providersLocation');
+
 // provider route settings
 var providersRouter = express.Router();
 providersRouter.use(bodyParser.json());
@@ -206,4 +208,10 @@ providersRouter.post('/signup', upload, (req, res, next) => {
     })
   });
 
+  
+  providersRouter.delete('/deleteAllLocations', ( req, res ) => {
+    providersLocationModel.deleteMany({}, (err, ress) => {
+      res.json({ success: true, message: 'deleted all the provider Locations'});
+    })
+  });
 module.exports = providersRouter;

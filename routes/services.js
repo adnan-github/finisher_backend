@@ -57,7 +57,7 @@ servicesRouter.get('/all', (req, res, next) => {
 
 // services route for find one service
 servicesRouter.get('/service', (req, res, next) => {
-  servicesModel.findById( {_id: ObjectId(req.query.id)},(err, service) => {
+  servicesModel.findOne( { name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');

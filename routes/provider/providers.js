@@ -6,7 +6,9 @@ var fs          = require('fs');
 var path        = require('path');
 var { Storage } = require('@google-cloud/storage');
 
+
 // custom modules
+var sendSMS           = require('../../utils/sendSMS');
 var providersModel    = require('../../models/providers');
 var Validate          = require('../../validators/userValidation');
 var authenticate      = require('../../middlewares/provider_passport');
@@ -196,17 +198,11 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       }
     }).select('_id');
   });
- 
-  providersRouter.delete('/deleteAll', ( req, res ) => {
-    providersModel.deleteMany({}, (err, ress) => {
-      res.json({ success: true, message: 'deleted all the providers'});
-    })
-  });
 
-  
-  providersRouter.delete('/deleteAllLocations', ( req, res ) => {
-    providersLocationModel.deleteMany({}, (err, ress) => {
-      res.json({ success: true, message: 'deleted all the provider Locations'});
-    })
+  providersRouter.post('/sendSMS', ( req, res ) => {
+    let message   = 'Finisher Home Services \n https://www.finisher.pk \n\n your phone verification code is 1123';
+    let response  = sendSMS.sendSMSToPhone(req.body.phone, message);
+    console.log(response);
   });
+  
 module.exports = providersRouter;

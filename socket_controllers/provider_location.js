@@ -32,6 +32,7 @@ module.exports = {
             status: 'disconnected'
         }, { upsert: false }, 
         ( err, doc ) => {
+            console.log('cahnged the status');
             if(err) {
                 return { success: false, message: 'unable to update status' }
             } else {

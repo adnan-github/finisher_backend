@@ -201,6 +201,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
 
   providersRouter.post('/sendSMS', ( req, res ) => {
     let message   = 'Finisher Home Services \n https://www.finisher.pk \n\n your phone verification code is 1123';
+    console.log(req.body);
     let response  = sendSMS.sendSMSToPhone(req.body.phone, message);
     console.log(response);
   });

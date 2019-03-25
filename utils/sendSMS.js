@@ -20,8 +20,6 @@ sendSMS = ( toNumber, toMessage ) => {
             method      : 'POST'
         };
 
-        console.log(requestPath);
-
         const request = https.request( post_options, (res) => {
             var str = '';
             res.setEncoding('utf8');

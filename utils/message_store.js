@@ -14,8 +14,10 @@ pro_ver_msg = ( Name ) => {
     return message;
 };
 
-export const signup_message = su_msg;
-export const phone_verification_message = pv_msg;
-export const profile_verification_message = pro_ver_msg;
+ module.exports = {
+    signup_message : su_msg,
+    phone_verification_message : pv_msg,
+    profile_verification_message : pro_ver_msg,
+ };
 
 

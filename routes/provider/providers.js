@@ -8,6 +8,7 @@ var { Storage } = require('@google-cloud/storage');
 
 
 // custom modules
+var { signup_message }= require('../../utils/message_store');
 var sendSMS           = require('../../utils/sendSMS');
 var providersModel    = require('../../models/providers');
 var Validate          = require('../../validators/userValidation');
@@ -103,6 +104,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, status: 'you are successfully signed up', data: provider });
+        sendSMS.sendSMSToPhone(provider.username, signup_message( provider.username));
       });
     }
   });
@@ -112,7 +114,6 @@ providersRouter.post('/signup', upload, (req, res, next) => {
   providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
     let token = authenticate.provider_generateToken({_id: req.user._id});
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
-      console.log(provider);
         if (err) {
           res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');

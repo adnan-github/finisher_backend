@@ -44,19 +44,3 @@ providerSchema.plugin(PassportLocalMongoose);
 const providerModel = mongoose.model('providers', providerSchema);
 
 module.exports = providerModel;
-
-/*
-username: {
-        type: String,
-        unique: true,
-        required: true,
-        minlength: 5,
-        maxlength: 20
-    },
-    password: {
-        type: String,
-        required: true,
-        maxlength: 20,
-        minlength: 5
-    },
-*/

@@ -8,11 +8,12 @@ var { Storage } = require('@google-cloud/storage');
 
 
 // custom modules
-var { signup_message }= require('../../utils/message_store');
 var sendSMS           = require('../../utils/sendSMS');
 var providersModel    = require('../../models/providers');
-var Validate          = require('../../validators/userValidation');
+var phoneVerifyModel  = require('../../models/phoneVerify');
 var authenticate      = require('../../middlewares/provider_passport');
+
+var { signup_message, phone_verification_message }= require('../../utils/message_store');
 
 var providersLocationModel = require('../../models/providersLocation');
 
@@ -111,7 +112,7 @@ providersRouter.post('/signup', upload, (req, res, next) => {
 });
 
 
-  providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
+providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
     let token = authenticate.provider_generateToken({_id: req.user._id});
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
@@ -136,9 +137,9 @@ providersRouter.post('/signup', upload, (req, res, next) => {
 
         }
       });
-  });
+});
 
-  providersRouter.get('/info', (req, res, next) => {
+providersRouter.get('/info', (req, res, next) => {
     const payload = req.headers.authorization;
     const token   = payload.split(' ')[1];
     const decoded_payload = jwt_decode(token);
@@ -157,9 +158,9 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       }
       
     });
-  });
+});
 
-  providersRouter.get('/checkphone', ( req, res, next ) => {
+providersRouter.get('/checkphone', ( req, res, next ) => {
     const data = req.query;
     console.log(data)
     providersModel.find({ phone: data.phone }, (err, user ) => {
@@ -178,9 +179,9 @@ providersRouter.post('/signup', upload, (req, res, next) => {
         });
       }
     });
-  });
+});
   
-  providersRouter.put('/updatepassword', ( req, res, next ) => {
+providersRouter.put('/updatepassword', ( req, res, next ) => {
     const data = req.body;
     providersModel.findByIdAndUpdate( data.provider_id, { password  : data.password }, (err, user ) => {
       if ( user._id ){
@@ -198,13 +199,41 @@ providersRouter.post('/signup', upload, (req, res, next) => {
         });
       }
     }).select('_id');
-  });
+});
 
-  providersRouter.post('/sendSMS', ( req, res ) => {
-    let message   = 'Finisher Home Services \n https://www.finisher.pk \n\n your phone verification code is 1123';
-    console.log(req.body);
-    let response  = sendSMS.sendSMSToPhone(req.body.phone, message);
-    console.log(response);
+
+providersRouter.post('/verifyPhone', (req, res) => {
+  let generatedCode = Math.floor(1000 + Math.random() * 9000);
+  console.log(generatedCode, '---->');
+  let query   = { phone: req.body.phone },
+      update  = { code: generatedCode },
+      options = { upsert: true, new: true, setDefaultsOnInsert: true };
+      
+  phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, response ) => {
+    if (error) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({  success: false, message: 'unable to add phone to db', error: error  });
+    } else {
+      sendSMS.sendSMSToPhone( response.phone, phone_verification_message( response.code ))
+        res.json({ success: true, status: 'phone added to DB', data: response.phone});
+    }
+}).select('phone code -_id');
+
+providersRouter.post('/matchCode', (req, res) => {
+  phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
+    console.log(response, error);
+    if(error || response.code != req.body.code || response == null ){
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({  success: false, message: 'unable to match code', error: error  });
+    } else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, message: 'Phone has been verified successfully', data: response });
+    }
   });
+});
   
+});
 module.exports = providersRouter;

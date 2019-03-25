@@ -5,7 +5,7 @@ su_msg = ( Name ) => {
 };
 // phone verification message
 pv_msg = ( phone_code ) => {
-    let message = 'Finisher Home Services\nhttps://www.finisher.pk\n\n Thank you for signing up, your phone verification code is' + phone_code;
+    let message = 'Finisher Home Services\nhttps://www.finisher.pk\n\n Thank you for signing up, your phone verification code is ' + phone_code;
     return message;
 };
 // profile verified message

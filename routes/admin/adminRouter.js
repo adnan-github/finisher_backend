@@ -1,11 +1,16 @@
 var express     = require('express');
 var bodyParser  = require('body-parser');
+var sendSMS     = require('../../utils/sendSMS');
+
+
 
 // custom modules
-var adminsModel   = require('../../models/admin');
-var providersModel = require('../../models/providers');
-var Validate      = require('../../validators/userValidation');
-var authenticate = require('../../middlewares/admin_passport');
+var adminsModel     = require('../../models/admin');
+var providersModel  = require('../../models/providers');
+var Validate        = require('../../validators/userValidation');
+var authenticate    = require('../../middlewares/admin_passport');
+
+var { profile_verification_message }  = require('../../utils/message_store')
 
 // admin route settings
 var adminsRouter = express.Router();
@@ -111,6 +116,7 @@ adminsRouter.post('/signup', (req, res, next) => {
         res.statusCode = 500;        
         res.json({ success: false, message: 'provider has not been verified' });
       } else {
+        sendSMS.sendSMSToPhone(response.username, profile_verification_message ( response.name ))
         res.statusCode = 200;
         res.json({ success: true, message: 'provider has been updated', data: response });
       }

@@ -1,9 +1,9 @@
-var express     = require('express');
-var bodyParser  = require('body-parser');
-var multer      = require('multer');
-var jwt_decode  = require('jwt-decode');
 var fs          = require('fs');
 var path        = require('path');
+var multer      = require('multer');
+var express     = require('express');
+var bodyParser  = require('body-parser');
+var jwt_decode  = require('jwt-decode');
 var { Storage } = require('@google-cloud/storage');
 
 
@@ -13,7 +13,7 @@ var providersModel    = require('../../models/providers');
 var phoneVerifyModel  = require('../../models/phoneVerify');
 var authenticate      = require('../../middlewares/provider_passport');
 
-var { signup_message, phone_verification_message }= require('../../utils/message_store');
+var { signup_message, phone_verification_message }  = require('../../utils/message_store');
 
 var providersLocationModel = require('../../models/providersLocation');
 
@@ -40,7 +40,8 @@ const multerStorage = multer.diskStorage({
   },
 });
 
-const upload = multer({
+// multer config to upload profile and cnic images
+const image_upload = multer({
   storage: multerStorage,
   limits:{fileSize: 100000000},
 }).fields([{
@@ -49,9 +50,12 @@ const upload = multer({
 }, {
   name: 'cnic_back',
   maxCount: 1
+}, {
+  name: 'profile_image',
+  maxCount: 1
 }]);
 
-providersRouter.post('/cnicupload', upload, (req, res) => {
+providersRouter.post('/imageUpload', image_upload, (req, res) => {
 
   var files_url     = [], 
   errors_array  = [];
@@ -80,7 +84,7 @@ providersRouter.post('/cnicupload', upload, (req, res) => {
               fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
                 errors_array.push(err);
               });
-              if(files_url.length == 2){
+              if(files_url.length == 3){
                 res.statusCode = 200;
                 res.json({ success : true, message : 'successfully uploaded images', data : files_url })
               }  

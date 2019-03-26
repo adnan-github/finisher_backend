@@ -40,9 +40,7 @@ sendSMS = ( toNumber, toMessage ) => {
         request.end();
     });
     
-    
-    
-      // https://sendpk.com/api/sms.php?username=USERNAME&password=PASSWORD&sender=BrandName&mobile=92310,92333,92345&format=josn&message=this+is+json+api.
+    // https://sendpk.com/api/sms.php?username=USERNAME&password=PASSWORD&sender=BrandName&mobile=92310,92333,92345&format=josn&message=this+is+json+api.
 };
 
 module.exports = {

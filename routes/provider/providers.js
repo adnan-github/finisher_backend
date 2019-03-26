@@ -204,36 +204,41 @@ providersRouter.put('/updatepassword', ( req, res, next ) => {
 
 providersRouter.post('/verifyPhone', (req, res) => {
   let generatedCode = Math.floor(1000 + Math.random() * 9000);
-  console.log(generatedCode, '---->');
   let query   = { phone: req.body.phone },
       update  = { code: generatedCode },
       options = { upsert: true, new: true, setDefaultsOnInsert: true };
-      
-  phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, response ) => {
-    if (error) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({  success: false, message: 'unable to add phone to db', error: error  });
+  
+  providersModel.findOne({ username: req.body.phone }, 'username').exec(function (error, response) {
+    if(response && response.username){
+      res.json({ success: false, message: 'phone number already in use', data: response.username });
+    } else if(error || !response) {
+      res.json({ success: false, message: 'error in updating database', error: error });
     } else {
-      sendSMS.sendSMSToPhone( response.phone, phone_verification_message( response.code ))
-        res.json({ success: true, status: 'phone added to DB', data: response.phone});
+      phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, response ) => {
+        if (error) {
+          res.setHeader('Content-Type', 'application/json');
+          res.json({  success: false, message: 'unable to add phone to db', error: error  });
+        } else {
+          sendSMS.sendSMSToPhone( response.phone, phone_verification_message( response.code ));
+            res.json({ success: true, status: 'phone added to DB', data: response.phone});
+        }
+      }).select('phone code -_id');
     }
-}).select('phone code -_id');
+  });
+});
 
 providersRouter.post('/matchCode', (req, res) => {
   phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
     console.log(response, error);
     if(error || response.code != req.body.code || response == null ){
-      res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({  success: false, message: 'unable to match code', error: error  });
     } else {
-      res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.json({ success: true, message: 'Phone has been verified successfully', data: response });
     }
   });
 });
   
-});
+
 module.exports = providersRouter;

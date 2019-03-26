@@ -1,6 +1,6 @@
 // signup message 
 su_msg = ( Name ) => {
-    let message = 'Hi ' + Name + ', your request to join Finisher network has been recieved, we will notify you once your profile is approved';
+    let message = 'Hello ' + Name + ', your request to join Finisher network has been recieved, we will notify you once your profile is approved';
     return message;
 };
 // phone verification message

@@ -40,40 +40,84 @@ const multerStorage = multer.diskStorage({
   },
 });
 
+const profileImageStorage = multer.diskStorage({
+  destination(req, file, callback) {
+    callback(null, './profile_images')
+  },
+  filename(req, file, callback) {
+    callback(null, `${file.originalname}`)
+  },
+});
 // multer config to upload profile and cnic images
-const image_upload = multer({
+const cnic_upload = multer({
   storage: multerStorage,
-  limits:{fileSize: 100000000},
+  limits:{fileSize: 5 * 1024 * 1024 },
 }).fields([{
   name: 'cnic_front',
   maxCount: 1
 }, {
   name: 'cnic_back',
   maxCount: 1
-}, {
+}]);
+
+const profile_image = multer({
+  storage : profileImageStorage,
+  limits  : {fileSize: 5 * 1024 * 1024 },
+}).fields([{
   name: 'profile_image',
   maxCount: 1
 }]);
 
-providersRouter.post('/imageUpload', image_upload, (req, res) => {
+providersRouter.post('/uploadProfileImage', profile_image, (req, res) => {
+  var files_url     = [], 
+      errors_array  = [];
+
+      fs.readdir('./profile_images', (err, files) => {
+        if(err) {
+          res.json({ success: false, message: 'unable to upload cnic', error: err});
+          return;
+        }
+        files.forEach(( file, index ) => {
+          if(file.split('.')[1] == 'jpeg'){
+            const file_path = 'profile_images/' + file;
+            my_bucket.upload(file_path, (err, file) => {
+              if(err){
+                res.json({ success : false, message : 'unable to upload images', error   : err });
+              } else {
+                let publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${file.metadata.name}`;
+                files_url.push(publicUrl);
+                if(file.metadata.name){
+                  fs.unlink(path.join('./profile_images', file.metadata.name), err => {
+                    errors_array.push(err);
+                  });
+                  if(files_url.length == 1){
+                    res.statusCode = 200;
+                    res.json({ success : true, message : 'successfully uploaded profile image', profile_image_url : files_url[0] })
+                  }  
+                }
+              }
+            });
+          }
+        });
+      });
+});
+
+providersRouter.post('/cnicUpload', cnic_upload, (req, res) => {
 
   var files_url     = [], 
-  errors_array  = [];
+      errors_array  = [];
     fs.readdir('./cnic_images', (err, files) => {
 
       // if error in reading images directory
       if(err) {
-        res.statusCode = 400;
         res.json({ success : false, message : 'unable to upload images', error   : err })
         console.log(err)
       }
       // read all the files in images folder and upload it to google cloud storage one by one    
       files.forEach( ( file, index ) => {
-        console.log(file);
         if( file.split('.')[1] == 'jpeg' ) {
-          console.log('here');
           const file_path = 'cnic_images/'+ file;
-        my_bucket.upload(file_path, ( err, file) => {
+        my_bucket.upload(file_path, (err, file) => {
           if (err) {
             res.statusCode = 400;
             res.json({ success : false, message : 'unable to upload images', error   : err });
@@ -84,7 +128,7 @@ providersRouter.post('/imageUpload', image_upload, (req, res) => {
               fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
                 errors_array.push(err);
               });
-              if(files_url.length == 3){
+              if(files_url.length == 2){
                 res.statusCode = 200;
                 res.json({ success : true, message : 'successfully uploaded images', data : files_url })
               }  
@@ -96,7 +140,7 @@ providersRouter.post('/imageUpload', image_upload, (req, res) => {
     });
 });
 
-providersRouter.post('/signup', upload, (req, res, next) => {
+providersRouter.post('/signup', (req, res, next) => {
 
 
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
@@ -108,8 +152,13 @@ providersRouter.post('/signup', upload, (req, res, next) => {
       (authenticate.authenticatProvider)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
+        delete provider.password;
+        delete provider.salt;
+        delete provider.hash;
+        delete provider.createdAt;
+        delete provider.updatedAt;
         res.json({ success: true, status: 'you are successfully signed up', data: provider });
-        sendSMS.sendSMSToPhone(provider.username, signup_message( provider.username));
+        sendSMS.sendSMSToPhone(provider.username, signup_message( provider.name));
       });
     }
   });
@@ -208,23 +257,26 @@ providersRouter.put('/updatepassword', ( req, res, next ) => {
 
 providersRouter.post('/verifyPhone', (req, res) => {
   let generatedCode = Math.floor(1000 + Math.random() * 9000);
+  console.log('here')
   let query   = { phone: req.body.phone },
       update  = { code: generatedCode },
       options = { upsert: true, new: true, setDefaultsOnInsert: true };
   
-  providersModel.findOne({ username: req.body.phone }, 'username').exec(function (error, response) {
-    if(response && response.username){
-      res.json({ success: false, message: 'phone number already in use', data: response.username });
-    } else if(error || !response) {
+  providersModel.findOne({ username: req.body.phone }, 'username').exec(function (error, provider) {
+    console.log(!provider)
+    if(provider && provider.username){
+      res.json({ success: false, message: 'phone number already in use', data: provider.username });
+    } else if(error) {
       res.json({ success: false, message: 'error in updating database', error: error });
-    } else {
-      phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, response ) => {
+    } else if( !provider ){
+      phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, phoneData ) => {
         if (error) {
           res.setHeader('Content-Type', 'application/json');
           res.json({  success: false, message: 'unable to add phone to db', error: error  });
         } else {
-          sendSMS.sendSMSToPhone( response.phone, phone_verification_message( response.code ));
-            res.json({ success: true, status: 'phone added to DB', data: response.phone});
+          console.log("sending code");
+          sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message( phoneData.code ));
+            res.json({ success: true, status: 'phone added to DB', data: phoneData.phone});
         }
       }).select('phone code -_id');
     }
@@ -232,6 +284,7 @@ providersRouter.post('/verifyPhone', (req, res) => {
 });
 
 providersRouter.post('/matchCode', (req, res) => {
+  console.log('==>', req.body.code)
   phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
     console.log(response, error);
     if(error || response.code != req.body.code || response == null ){

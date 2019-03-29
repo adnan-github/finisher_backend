@@ -121,6 +121,19 @@ customerRouter.post('/verifyPhone', (req, res) => {
   });
 });
 
+customerRouter.post('/matchCode', (req, res) => {
+  console.log('==>', req.body.code)
+  phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
+    console.log(response, error);
+    if(error || response.code != req.body.code || response == null ){
+      res.setHeader('Content-Type', 'application/json');
+      res.json({  success: false, message: 'unable to match code', error: error  });
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, message: 'Phone has been verified successfully', data: response });
+    }
+  });
+});
 
 
 module.exports = customerRouter;

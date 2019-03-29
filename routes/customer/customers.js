@@ -5,8 +5,8 @@ var jwt_decode  = require('jwt-decode');
 var mongoose    = require('mongoose');
 // custom modules
 var customerModel     = require('../../models/customers');
-var Validate      = require('../../validators/userValidation');
-var authenticate  = require('../../middlewares/customer_passport');
+var phoneVerifyModel  = require('../../models/phoneVerify');
+var authenticate      = require('../../middlewares/customer_passport');
 // customer route settings
 var customerRouter = express.Router();
 customerRouter.use(bodyParser.json());
@@ -87,7 +87,35 @@ customerRouter.get('/all', (req, res) => {
       res.json({ success : false, message: 'no customers found'});
     }
   });
-})
+});
+
+customerRouter.post('/verifyPhone', (req, res) => {
+  let generatedCode = Math.floor(1000 + Math.random() * 9000);
+  console.log('here')
+  let query   = { phone: req.body.phone },
+      update  = { code: generatedCode },
+      options = { upsert: true, new: true, setDefaultsOnInsert: true };
+  
+  customerModel.findOne({ username: req.body.phone }, 'username').exec(function (error, customer) {
+    console.log(!customer)
+    if(customer && customer.username){
+      res.json({ success: false, message: 'phone number already in use', data: customer.username });
+    } else if(error) {
+      res.json({ success: false, message: 'error in updating database', error: error });
+    } else if( !customer ){
+      phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, phoneData ) => {
+        if (error) {
+          res.setHeader('Content-Type', 'application/json');
+          res.json({  success: false, message: 'unable to add phone to db', error: error  });
+        } else {
+          console.log("sending code");
+          sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message( phoneData.code ));
+            res.json({ success: true, status: 'phone added to DB', data: phoneData.phone});
+        }
+      }).select('phone code -_id');
+    }
+  });
+});
 
 
 

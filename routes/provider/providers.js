@@ -169,12 +169,10 @@ providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next
     let token = authenticate.provider_generateToken({_id: req.user._id});
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
-          res.statusCode = 404;
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'Unable to login'});
         }
-        else if (!provider || provider.password !== req.body.password ) { 
-          res.statusCode = 400;
+        else if (!provider || provider.password !== req.body.password ) {
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, status: 'wrong username or password'});
         }

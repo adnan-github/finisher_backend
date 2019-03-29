@@ -4,9 +4,13 @@ var bodyParser  = require('body-parser');
 var jwt_decode  = require('jwt-decode');
 var mongoose    = require('mongoose');
 // custom modules
+
+var sendSMS           = require('../../utils/sendSMS');
 var customerModel     = require('../../models/customers');
 var phoneVerifyModel  = require('../../models/phoneVerify');
 var authenticate      = require('../../middlewares/customer_passport');
+
+var { signup_message, phone_verification_message }  = require('../../utils/message_store');
 // customer route settings
 var customerRouter = express.Router();
 customerRouter.use(bodyParser.json());

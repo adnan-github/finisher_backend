@@ -8,7 +8,7 @@ var createError = require('http-errors');
 var dotenv      = require('dotenv').config({ debug: process.env.DEBUG });
 
 // routes
-var customersRouter     = require('./routes/customer/customers');
+var customersRouter     = require('./routes/customer/customers').default;
 var indexRouter         = require('./routes/index');
 var servicesRouter      = require('./routes/services');
 var homeServicesRouter  = require('./routes/homeServices');

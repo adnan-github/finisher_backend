@@ -1,5 +1,5 @@
 
-const https         = require('http');
+const https         = require('https');
 const queryString   = require('query-string');
 
 // send sms to provided Number
@@ -39,8 +39,6 @@ sendSMS = ( toNumber, toMessage ) => {
         request.write('hi');
         request.end();
     });
-    
-    // https://sendpk.com/api/sms.php?username=USERNAME&password=PASSWORD&sender=BrandName&mobile=92310,92333,92345&format=josn&message=this+is+json+api.
 };
 
 module.exports = {

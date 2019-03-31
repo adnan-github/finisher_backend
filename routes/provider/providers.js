@@ -294,6 +294,16 @@ providersRouter.post('/matchCode', (req, res) => {
     }
   });
 });
+
+providersRouter.post('/deleteall', (req, res) => {
+    providersModel.deleteMany({}, (err, data ) => {
+      providersLocationModel.deleteMany({}, (err, user) => {
+        res.json({ success: true, message: 'deleted'})
+      })
+      
+    })
+    
+})
   
 
 module.exports = providersRouter;

@@ -135,5 +135,15 @@ customerRouter.post('/matchCode', (req, res) => {
   });
 });
 
+customerRouter.delete('/deleteByNumber', (req, res) => {
+  customerModel.deleteOne({ username: req.body.phone }, ( error, data ) => {
+    if (error){
+      res.json({ success: false, message: 'error in deleteing user', error: error })
+    } else if ( data ) {
+      res.json({ success: true, message: 'successfully deleted the customer', data: data})
+    }
+  });
+});
+
 
 module.exports = customerRouter;

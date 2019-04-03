@@ -1,10 +1,12 @@
 // requirements
 var path        = require('path');
 var cors        = require('cors');
+var helmet      = require('helmet');
 var logger      = require('morgan');
 var express     = require('express');
 var passport    = require('passport');
 var createError = require('http-errors');
+var compression = require('compression');
 var dotenv      = require('dotenv').config({ debug: process.env.DEBUG });
 
 // routes
@@ -23,6 +25,8 @@ var mongoConnect = require('./middlewares/mongoConnect');
 var app = express();
 
 app.use(cors());
+app.use(helmet());
+app.use(compression());
 app.use(logger('dev'));
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({

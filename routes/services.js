@@ -71,6 +71,7 @@ servicesRouter.get('/adminService', (req, res, next) => {
 });
 
 servicesRouter.get('/service', (req, res, next) => {
+  console.log(req.query);
   servicesModel.findOne( { name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;

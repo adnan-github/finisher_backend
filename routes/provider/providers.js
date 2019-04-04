@@ -111,7 +111,6 @@ providersRouter.post('/cnicUpload', cnic_upload, (req, res) => {
       // if error in reading images directory
       if(err) {
         res.json({ success : false, message : 'unable to upload images', error   : err })
-        console.log(err)
       }
       // read all the files in images folder and upload it to google cloud storage one by one    
       files.forEach( ( file, index ) => {
@@ -145,7 +144,6 @@ providersRouter.post('/signup', (req, res, next) => {
 
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
-      console.log(err);
       res.setHeader('Content-Type', 'application/json');
       res.json({success: false, message: 'unable to signup', error: err});
     } else {
@@ -213,7 +211,6 @@ providersRouter.get('/info', (req, res, next) => {
 
 providersRouter.get('/checkphone', ( req, res, next ) => {
     const data = req.query;
-    console.log(data)
     providersModel.find({ phone: data.phone }, (err, user ) => {
       if ( user.phone ){
         res.status = 200;
@@ -222,7 +219,6 @@ providersRouter.get('/checkphone', ( req, res, next ) => {
           message : 'phone number correct'
         });
       } else {
-        console.log(err)
         res.status = 404;
         res.json({
           success : false,
@@ -255,13 +251,11 @@ providersRouter.put('/updatepassword', ( req, res, next ) => {
 
 providersRouter.post('/verifyPhone', (req, res) => {
   let generatedCode = Math.floor(1000 + Math.random() * 9000);
-  console.log('here')
   let query   = { phone: req.body.phone },
       update  = { code: generatedCode },
       options = { upsert: true, new: true, setDefaultsOnInsert: true };
   
   providersModel.findOne({ username: req.body.phone }, 'username').exec(function (error, provider) {
-    console.log(!provider)
     if(provider && provider.username){
       res.json({ success: false, message: 'phone number already in use', data: provider.username });
     } else if(error) {
@@ -272,7 +266,6 @@ providersRouter.post('/verifyPhone', (req, res) => {
           res.setHeader('Content-Type', 'application/json');
           res.json({  success: false, message: 'unable to add phone to db', error: error  });
         } else {
-          console.log("sending code");
           sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message( phoneData.code ));
             res.json({ success: true, status: 'phone added to DB', data: phoneData.phone});
         }

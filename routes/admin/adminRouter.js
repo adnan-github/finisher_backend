@@ -90,7 +90,6 @@ adminsRouter.post('/signup', (req, res, next) => {
   });
 
   adminsRouter.get('/request', (req, res, next) => {
-    console.log(req.params, req.query)
     providersModel.findById({_id: req.query.id }, function(err, provider){
       if(err){
         res.statusCode = 400;
@@ -112,7 +111,6 @@ adminsRouter.post('/signup', (req, res, next) => {
     const payload = req.body;
     providersModel.findByIdAndUpdate(payload.id, { $set: payload }, ( err, response ) => {
       if ( err ){
-        console.log(err);
         res.statusCode = 500;        
         res.json({ success: false, message: 'provider has not been verified' });
       } else {

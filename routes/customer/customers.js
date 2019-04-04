@@ -22,11 +22,11 @@ customerRouter.get('/', function (req, res, next) {
 
 // signup route for customers
 customerRouter.post('/signup', (req, res, next) => {
-  console.log(req.body);
+
   customerModel.register(new customerModel(req.body), req.body.password, (err, Customer) => {
 
     if (err) {
-      console.log(err);
+      
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({err: err});
@@ -99,13 +99,12 @@ customerRouter.get('/all', (req, res) => {
 
 customerRouter.post('/verifyPhone', (req, res) => {
   let generatedCode = Math.floor(1000 + Math.random() * 9000);
-  console.log('here')
   let query   = { phone: req.body.phone },
       update  = { code: generatedCode },
       options = { upsert: true, new: true, setDefaultsOnInsert: true };
   
   customerModel.findOne({ username: req.body.phone }, 'username').exec(function (error, customer) {
-    console.log(!customer)
+
     if(customer && customer.username){
       res.json({ success: false, message: 'phone number already in use', data: customer.username });
     } else if(error) {
@@ -116,7 +115,7 @@ customerRouter.post('/verifyPhone', (req, res) => {
           res.setHeader('Content-Type', 'application/json');
           res.json({  success: false, message: 'unable to add phone to db', error: error  });
         } else {
-          console.log("sending code");
+
           sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message( phoneData.code ));
             res.json({ success: true, status: 'phone added to DB', data: phoneData.phone});
         }
@@ -126,9 +125,7 @@ customerRouter.post('/verifyPhone', (req, res) => {
 });
 
 customerRouter.post('/matchCode', (req, res) => {
-  console.log('==>', req.body.code)
   phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
-    console.log(response, error);
     if(error || response.code != req.body.code || response == null ){
       res.setHeader('Content-Type', 'application/json');
       res.json({  success: false, message: 'unable to match code', error: error  });
@@ -140,7 +137,6 @@ customerRouter.post('/matchCode', (req, res) => {
 });
 
 customerRouter.delete('/deleteByNumber', (req, res) => {
-  console.log('here');
   customerModel.deleteOne({ username: req.body.phone }, ( error, data ) => {
     if (error){
       res.json({ success: false, message: 'error in deleteing user', error: error })

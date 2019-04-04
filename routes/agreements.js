@@ -33,7 +33,6 @@ agreementsRouter.post('/initiate', (req, res, next) => {
         agreement_type    : req.body.agreement_type,
         socketId          : data.socketId
     }), (err, data ) => {
-      console.log('------> err', err, '----------> data ', data);
       if ( err ){
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
@@ -45,7 +44,6 @@ agreementsRouter.post('/initiate', (req, res, next) => {
         customer_object.agreement_id = data._id;
         res.json({ success: true, data: data._id, message: 'contract initiated'});
         nearByProviders.sockets.forEach( socketId => {
-          console.log('here')
             io.sockets.to(socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
         });
       }
@@ -100,7 +98,6 @@ agreementsRouter.get('/:id', (req, res, next) => {
   // route to confirm the agreement between provider and customer
   agreementsRouter.post('/confirmAgreement', ( req, res ) => {
       let payload = req.body;
-      console.log('provider accepted', payload);
       agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , { $set: {
         provider_Id : payload.provider_Id,
         status      : 'accepted' }

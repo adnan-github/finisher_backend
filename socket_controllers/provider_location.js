@@ -4,7 +4,6 @@ module.exports = {
     // it will continously update provider location via socket.io
     updateProviderLocation: ( payload, _id ) => {
 
-        console.log(payload.providerId, _id )
         var latitude = parseFloat(payload.location.coords.latitude);
         var longitude = parseFloat(payload.location.coords.longitude);
         ProvidersLocationModel.findOneAndUpdate({ providerId: ObjectId(payload.providerId) }, {
@@ -32,7 +31,6 @@ module.exports = {
             status: 'disconnected'
         }, { upsert: false }, 
         ( err, doc ) => {
-            console.log('cahnged the status');
             if(err) {
                 return { success: false, message: 'unable to update status' }
             } else {

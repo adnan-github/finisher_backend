@@ -29,7 +29,6 @@ servicesRouter.post('/addNew', (req, res, next) => {
 servicesRouter.delete('/deleteService', (req, res, next) => {
 
   servicesModel.deleteOne({ _id: ObjectId(req.query.id)}, (err, user) => {
-    console.log('here');
     if (err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -71,7 +70,6 @@ servicesRouter.get('/adminService', (req, res, next) => {
 });
 
 servicesRouter.get('/service', (req, res, next) => {
-  console.log(req.query);
   servicesModel.findOne( { name: req.query.service_name},(err, service) => {
     if (err) {
       res.statusCode = 500;
@@ -86,7 +84,6 @@ servicesRouter.get('/service', (req, res, next) => {
 });
 
 servicesRouter.put('/updateService', ( req, res ) => {
-  console.log( '--------', req.body)
   servicesModel.findByIdAndUpdate( { _id : ObjectId(req.body.id)}, { $set: { perHour: req.body.perHour } }, { new: true }, ( error, service ) => {
     if( error ) {
       res.statusCode = 500;

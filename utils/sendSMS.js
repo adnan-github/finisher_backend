@@ -4,7 +4,6 @@ const queryString   = require('query-string');
 
 // send sms to provided Number
 sendSMS = ( toNumber, toMessage ) => {
-    console.log(' -- ', toNumber, toMessage)
     return new Promise(( resolve, reject ) => {
 
         // creating request body to send SMS

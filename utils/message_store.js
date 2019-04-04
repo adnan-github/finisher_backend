@@ -17,6 +17,7 @@ pro_ver_msg = ( Name ) => {
 // customer signup message
 customer_su_msg = ( Name ) => {
     let message = 'Hello ' + Name + ', thank you for joining Finisher Network, login to your account to get the best services ';
+    return message;
 };
 
  module.exports = {

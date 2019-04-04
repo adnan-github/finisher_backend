@@ -137,6 +137,7 @@ customerRouter.post('/matchCode', (req, res) => {
 });
 
 customerRouter.delete('/deleteByNumber', (req, res) => {
+  console.log('here');
   customerModel.deleteOne({ username: req.body.phone }, ( error, data ) => {
     if (error){
       res.json({ success: false, message: 'error in deleteing user', error: error })

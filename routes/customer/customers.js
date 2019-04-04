@@ -142,7 +142,7 @@ customerRouter.delete('/deleteByNumber', (req, res) => {
     if (error){
       res.json({ success: false, message: 'error in deleteing user', error: error })
     } else if ( data ) {
-      res.json({ success: true, message: 'successfully deleted the customer', data: data})
+      res.json({ success: true, message: 'successfully deleted the customer', data: data.deletedCount})
     }
   });
 });

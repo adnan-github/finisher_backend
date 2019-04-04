@@ -34,7 +34,8 @@ customerRouter.post('/signup', (req, res, next) => {
       (authenticate.authenticateCustomer)(req, res, () => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json({ success: true, status: 'you are successfully signed up'});
+        console.log('->', Customer.username)
+        res.json({ success: true, status: 'you are successfully signed up', Customer});
         sendSMS.sendSMSToPhone( Customer.username, customer_signup_message( Customer.name ));
       });
     }

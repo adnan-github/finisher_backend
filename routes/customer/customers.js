@@ -10,7 +10,7 @@ var customerModel     = require('../../models/customers');
 var phoneVerifyModel  = require('../../models/phoneVerify');
 var authenticate      = require('../../middlewares/customer_passport');
 
-var { signup_message, phone_verification_message }  = require('../../utils/message_store');
+var { signup_message, phone_verification_message, customer_signup_message }  = require('../../utils/message_store');
 // customer route settings
 var customerRouter = express.Router();
 customerRouter.use(bodyParser.json());
@@ -35,6 +35,7 @@ customerRouter.post('/signup', (req, res, next) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, status: 'you are successfully signed up'});
+        sendSMS.sendSMSToPhone( Customer.username, customer_signup_message( Customer.name ));
       });
     }
   });

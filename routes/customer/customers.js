@@ -26,7 +26,7 @@ customerRouter.post('/signup', (req, res, next) => {
   customerModel.register(new customerModel(req.body), req.body.password, (error, Customer) => {
 
     if (error) {
-      console.log
+      console.log(error)
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.json({ success: false, message: 'unable to signUp', error: error});

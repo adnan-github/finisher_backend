@@ -23,7 +23,7 @@ customerRouter.get('/', function (req, res, next) {
 // signup route for customers
 customerRouter.post('/signup', (req, res, next) => {
 
-  customerModel.register(new customerModel(req.body), req.body.password, (err, Customer) => {
+  customerModel.register(new customerModel(req.body), req.body.password, (error, Customer) => {
 
     if (error) {
       console.log

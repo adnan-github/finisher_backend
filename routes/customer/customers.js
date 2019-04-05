@@ -45,11 +45,29 @@ customerRouter.post('/signup', (req, res, next) => {
 });
 
 // Route to login and create session for the Customer
-customerRouter.post('/login', authenticate.authenticateCustomer, (req, res, next) => {
-  let token = authenticate.customer_generateToken({_id: req.user._id});
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json');
-  res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
+customerRouter.post('/login', (req, res, next) => {
+  customerModel.findOne({ username: req.body.username }, function (err, customer) {
+    if (err) {
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: false, status: 'Unable to login, please provide credentials again'});
+    }
+    else if (!customer || customer.password !== req.body.password ) {
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: false, status: 'wrong username or password'});
+    }
+    else if (customer.isVerified == false ){
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: false, message: 'your account is not verified'});
+    }
+    else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      let token = authenticate.customer_generateToken({_id: customer._id});
+      res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
+
+    }
+  });
 });
 
 // logout customer and destroy the session

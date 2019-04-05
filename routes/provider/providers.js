@@ -163,8 +163,8 @@ providersRouter.post('/signup', (req, res, next) => {
 });
 
 
-providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
-    let token = authenticate.provider_generateToken({_id: req.user._id});
+providersRouter.post('/login', (req, res, next) => {
+    
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
           res.setHeader('Content-Type', 'application/json');
@@ -182,8 +182,8 @@ providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next
         else {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
+          let token = authenticate.provider_generateToken({_id: provider._id});
           res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
-
         }
       });
 });

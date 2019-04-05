@@ -49,11 +49,11 @@ customerRouter.post('/login', (req, res, next) => {
   customerModel.findOne({ username: req.body.username }, function (err, customer) {
     if (err) {
       res.setHeader('Content-Type', 'application/json');
-      res.json({ success: false, status: 'Unable to login, please provide credentials again'});
+      res.json({ success: false, message: 'Unable to login, please provide credentials again'});
     }
     else if (!customer || customer.password !== req.body.password ) {
       res.setHeader('Content-Type', 'application/json');
-      res.json({ success: false, status: 'wrong username or password'});
+      res.json({ success: false, message: 'wrong username or password'});
     }
     else if (customer.isVerified == false ){
       res.statusCode = 400;
@@ -64,7 +64,7 @@ customerRouter.post('/login', (req, res, next) => {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       let token = authenticate.customer_generateToken({_id: customer._id});
-      res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
+      res.json({ success: true, token: token, message: 'Successfully Logged in..!!!'});
 
     }
   });

@@ -168,11 +168,11 @@ providersRouter.post('/login', (req, res, next) => {
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
           res.setHeader('Content-Type', 'application/json');
-          res.json({ success: false, status: 'Unable to login'});
+          res.json({ success: false, message: 'Unable to login'});
         }
         else if (!provider || provider.password !== req.body.password ) {
           res.setHeader('Content-Type', 'application/json');
-          res.json({ success: false, status: 'wrong username or password'});
+          res.json({ success: false, message: 'wrong username or password'});
         }
         else if (provider.isVerified == false ){
           res.statusCode = 400;
@@ -183,7 +183,7 @@ providersRouter.post('/login', (req, res, next) => {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           let token = authenticate.provider_generateToken({_id: provider._id});
-          res.json({ success: true, token: token, status: 'Successfully Logged in..!!!'});
+          res.json({ success: true, token: token, message: 'Successfully Logged in..!!!'});
         }
       });
 });

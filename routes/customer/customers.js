@@ -25,11 +25,11 @@ customerRouter.post('/signup', (req, res, next) => {
 
   customerModel.register(new customerModel(req.body), req.body.password, (err, Customer) => {
 
-    if (err) {
-      
+    if (error) {
+      console.log
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
+      res.json({ success: false, message: 'unable to signUp', error: error});
     } else {
       (authenticate.authenticateCustomer)(req, res, () => {
         res.statusCode = 200;
@@ -146,7 +146,7 @@ customerRouter.post('/matchCode', (req, res) => {
   phoneVerifyModel.findOne({ phone: req.body.phone }, 'code -_id').exec((error, response) => {
     if(error || response.code != req.body.code || response == null ){
       res.setHeader('Content-Type', 'application/json');
-      res.json({  success: false, message: 'unable to match code', error: error  });
+      res.json({  success: false, message: 'The Code you provided did not match' , error: error  });
     } else {
       res.setHeader('Content-Type', 'application/json');
       res.json({ success: true, message: 'Phone has been verified successfully', data: response });

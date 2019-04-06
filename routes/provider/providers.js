@@ -294,11 +294,19 @@ providersRouter.post('/deleteall', (req, res) => {
     providersModel.deleteMany({}, (err, data ) => {
       providersLocationModel.deleteMany({}, (err, user) => {
         res.json({ success: true, message: 'deleted'})
-      })
-      
-    })
-    
-})
+      })      
+    })    
+});
+
+providersRouter.delete('/deleteByPhone', ( req, res )=>{
+    providersModel.deleteOne({ username: req.body.phone }, ( err, dbResponse) => {
+      if(res){
+        res.send({ success: true, message: 'deleted successfully', data: dbResponse});
+      } else {
+        res.json({ success: true, message: 'unable to delete', data: err})
+      }
+    });
+});
   
 
 module.exports = providersRouter;

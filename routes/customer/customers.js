@@ -45,7 +45,7 @@ customerRouter.post('/signup', (req, res, next) => {
 });
 
 // Route to login and create session for the Customer
-customerRouter.post('/login', (req, res, next) => {
+customerRouter.post('/login', authenticate.authenticateCustomer, (req, res, next) => {
   customerModel.findOne({ username: req.body.username }, function (err, customer) {
     if (err) {
       res.setHeader('Content-Type', 'application/json');

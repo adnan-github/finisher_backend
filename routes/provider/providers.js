@@ -180,6 +180,7 @@ providersRouter.post('/login', (req, res, next) => {
           res.json({ success: false, message: 'your account is not verified'});
         }
         else {
+          console.log('provider', provider);
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           let token = authenticate.provider_generateToken({_id: provider._id});

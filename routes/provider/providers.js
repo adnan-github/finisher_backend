@@ -163,7 +163,7 @@ providersRouter.post('/signup', (req, res, next) => {
 });
 
 
-providersRouter.post('/login', (req, res, next) => {
+providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
     
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
       console.log(err, provider, '----');

@@ -224,23 +224,16 @@ providersRouter.get('/checkphone', ( req, res, next ) => {
       }
     });
 });
-  
+
+provider
+
 providersRouter.put('/updatepassword', ( req, res, next ) => {
     const data = req.body;
     providersModel.findByIdAndUpdate( data.provider_id, { password  : data.password }, (err, user ) => {
       if ( user._id ){
-        res.status = 200;
-        res.json({
-          success : true,
-          message : 'password updated',
-          provider_id : user._id
-        });
+        res.json({ success : true, message : 'password updated', provider_id : user._id });
       } else {
-        res.status = 404;
-        res.json({
-          success : false,
-          message : 'unable to update password'
-        });
+        res.json({ success : false, message : 'unable to update password' });
       }
     }).select('_id');
 });
@@ -254,7 +247,7 @@ providersRouter.post('/verifyPhone', (req, res) => {
   
   providersModel.findOne({ username: req.body.phone }, 'username').exec(function (error, provider) {
     if(provider && provider.username){
-      res.json({ success: false, message: 'phone number already in use', data: provider.username });
+      res.json({ success: false, message: 'phone number already in use', data: provider.username, exists: true });
     } else if(error) {
       res.json({ success: false, message: 'error in updating database', error: error });
     } else if( !provider ){
@@ -293,7 +286,7 @@ providersRouter.post('/deleteall', (req, res) => {
     })    
 });
 
-providersRouter.delete('/deleteByPhone', ( req, res )=>{
+providersRouter.delete('/deleteByPhone', ( req, res ) => {
     providersModel.deleteOne({ username: req.body.phone }, ( err, dbResponse) => {
       if(res){
         res.send({ success: true, message: 'deleted successfully', data: dbResponse});

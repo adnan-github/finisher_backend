@@ -14,7 +14,6 @@ agreementsRouter.use(bodyParser.json());
 // agreements route for new service
 agreementsRouter.post('/initiate', (req, res, next) => {
 
-  var nearByProviders = req.body.nearByProviders;
   customers_Location(req.body.customer_id).then( data => {
 
     let customer_object = {

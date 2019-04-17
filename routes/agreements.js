@@ -6,6 +6,7 @@ var bodyParser  = require('body-parser');
 var agreementsModel     = require('../models/agreements');
 var authenticate        = require('../middlewares/customer_passport');
 var customers_Location  = require('../socket_controllers/customer_location').populateCustomersRecord;
+var providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
@@ -24,6 +25,7 @@ agreementsRouter.post('/initiate', (req, res, next) => {
           category        : req.body.selected_service
     };
 
+    
     // initiating the agreement
     agreementsModel.create(new agreementsModel({
         customer_id       : req.body.customer_id,
@@ -33,15 +35,14 @@ agreementsRouter.post('/initiate', (req, res, next) => {
         socketId          : data.socketId
     }), (err, data ) => {
       if ( err ){
-        res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
-        res.json({err: err});
+        res.json({ success: false, message: 'unable to initiate agreement ', err: err});
       }
       else {
-        res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         customer_object.agreement_id = data._id;
         res.json({ success: true, data: data._id, message: 'contract initiated'});
+        
         nearByProviders.sockets.forEach( socketId => {
             io.sockets.to(socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
         });

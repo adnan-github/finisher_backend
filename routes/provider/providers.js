@@ -225,7 +225,6 @@ providersRouter.get('/checkphone', ( req, res, next ) => {
     });
 });
 
-provider
 
 providersRouter.put('/updatepassword', ( req, res, next ) => {
     const data = req.body;

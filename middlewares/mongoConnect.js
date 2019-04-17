@@ -3,7 +3,7 @@ mongoose.Promise = require('bluebird');
 
 function mongoConnect() {
     // mongodb connection
-    var url = process.env.MONGODB_ADDON_URI || process.env.ATLAS_DB_URL ||process.env.MONGO_LOCAL_URL;
+    var url = process.env.MONGODB_ADDON_URI || process.env.MONGO_LOCAL_URL || process.env.ATLAS_DB_URL;
     var connect = mongoose.connect(url, {
         useNewUrlParser: true
     });

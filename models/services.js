@@ -12,6 +12,9 @@ const servicesSchema = new Schema({
     perHour: {
         type: Number,
         required: true
+    },
+    icon_link: {
+        type: String
     }
 }, {
     timestamps: true

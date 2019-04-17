@@ -2,6 +2,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const timeTrackSchema = new Schema({
+    start_time: {
+        type: String
+    },
+    end_time: {
+        type: String
+    },
+    hours: {
+        type: String
+    } 
+}); 
+
 const agreementsSchema = new Schema({
     customer_id: {
         type: Schema.Types.ObjectId,
@@ -26,7 +38,8 @@ const agreementsSchema = new Schema({
     },
     customer_socket: {
         type: String
-    }
+    },
+    time: [timeTrackSchema]
 }, {        
     timestamps: true
     });

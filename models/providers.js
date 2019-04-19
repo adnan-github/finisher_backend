@@ -9,8 +9,7 @@ const providerSchema = new Schema({
         required: true
     },
     email: {
-        type: String,
-        required: true
+        type: String
     },
     cnic: {
         type: String, 

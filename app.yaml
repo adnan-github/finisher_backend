@@ -1,2 +1,4 @@
 runtime: nodejs10
 env: standard
+manual_scaling:
+      instances: 1

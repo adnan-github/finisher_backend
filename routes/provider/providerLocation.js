@@ -3,8 +3,8 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var providerLocationModel   = require('../../models/providersLocation');
-var Validate      = require('../../validators/userValidation');
-var authenticate = require('../../middlewares/provider_passport');
+var Validate        = require('../../validators/userValidation');
+var authenticate    = require('../../middlewares/provider_passport');
 
 // provider Location route settings
 var providerLocationRouter = express.Router();
@@ -20,7 +20,7 @@ providerLocationRouter.get("/providerLocation", function(req, res, next){
 						"type":"Point",
 						"coordinates": [ parseFloat(req.query.longitude), parseFloat(req.query.latitude) ]
 					},
-					"$maxDistance":10000
+					"$maxDistance":20000
 				}
 			}
 		}, function(err, location){

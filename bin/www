@@ -34,6 +34,9 @@ io.set('transports', ['websocket']);
 global.io = io;
 
 app.io = io.sockets.on('connection', (socket) => {
+  socket.on('authentication', () => {
+    console.log(socket.username);
+  });
   console.log(`Socket ${socket.id} connected.`);
   socket.on('disconnect', () => {
     if(socket.type == 'provider'){

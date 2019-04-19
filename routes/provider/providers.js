@@ -140,7 +140,7 @@ providersRouter.post('/cnicUpload', cnic_upload, (req, res) => {
 });
 
 providersRouter.post('/signup', (req, res, next) => {
-
+console.log('provider signup request==>', req.body)
 
   providersModel.register(new providersModel(req.body), req.body.password, (err, provider) => {
     if (err) {
@@ -148,13 +148,8 @@ providersRouter.post('/signup', (req, res, next) => {
       res.json({success: false, message: 'unable to signup', error: err});
     } else {
       (authenticate.authenticatProvider)(req, res, () => {
-        res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        delete provider.password;
-        delete provider.salt;
-        delete provider.hash;
-        delete provider.createdAt;
-        delete provider.updatedAt;
+        console.log('provider signup====>',provider);
         res.json({ success: true, status: 'you are successfully signed up', data: provider });
         sendSMS.sendSMSToPhone(provider.username, signup_message( provider.name));
       });
@@ -164,9 +159,7 @@ providersRouter.post('/signup', (req, res, next) => {
 
 
 providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
-    
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
-      console.log(err, provider, '----');
         if (err) {
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, message: 'Unable to login'});
@@ -180,7 +173,6 @@ providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next
           res.json({ success: false, message: 'your account is not verified'});
         }
         else {
-          console.log('provider', provider);
           res.setHeader('Content-Type', 'application/json');
           let token = authenticate.provider_generateToken({_id: provider._id});
           res.json({ success: true, token: token, message: 'Successfully Logged in..!!!'});

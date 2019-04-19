@@ -1,2 +1,4 @@
 runtime: custom
 env: standard
+manual_scaling:
+      instances: 1

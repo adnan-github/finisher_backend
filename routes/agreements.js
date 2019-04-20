@@ -42,51 +42,58 @@ agreementsRouter.post('/initiate', (request, response, next) => {
         }
         else {
           contract_id = data._id;
+          
         }
       }); // agreement creation request ends here 
   
     customer_location_data.geometry.lat = data.coordinate.coordinates[1]; 
     customer_location_data.geometry.lng = data.coordinate.coordinates[0];
+    
+    console.log(customer_location_data)
     nearby_providers_Location(customer_location_data).then(provider => {
+      console.log('', provider)
+      customer_object.agreement_id = contract_id;
       io.sockets.to(provider[0].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
-      for(let i = 0; i < provider.length; i++){
+      for (let i = 0; i < provider.length; i++) {
         setTimeout(() => {
-          console.log(provider[0].socketId);       
-          if(i >= 0 && i < provider.length) {
-            agreementsModel.findById({ _id: ObjectId(contract_id)}, ( err, data ) => {
-              if(err) {
-                console.log(err)
-                response.json({ success: false, message: 'No Providers are available at this time', error: err});
-                return;
-              } else {
-                if(data.status == 'accepted') {
-                  response.json({ success: true, message: 'agreement initiated successfully'});
+            if ( i > 0 && i <= provider.length) {
+              agreementsModel.findById({ _id: ObjectId(contract_id)}, ( err, data ) => {
+                if(err) {
+                  console.log(err)
+                  response.json({ success: false, message: 'No Providers are available at this time', error: err});
                   return;
-                }
-                else if(data.status == 'pending' && !provider[i]){              
-                  agreementsModel.deleteOne({ _id: ObjectId(contract_id)}, (err, data) => {
-                    if(data){
-                      response.json({ success: false, message: 'No Providers are available at this time'});
-                      return;
-                    }
-                  });
-                } else if (provider[i] && data.status == 'pending') {
-                  io.sockets.to(provider[i].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
-                }
-              }              
-              
-              });
-          }
-          
+                } else {
+                  if(data.status == 'accepted') {
+                    response.json({ success: true, message: 'agreement initiated successfully'});
+                    return;
+                  }
+                  else if(data.status == 'pending' && !provider[i]){              
+                    agreementsModel.deleteOne({ _id: ObjectId(contract_id)}, (err, data) => {
+                      if(data){
+                        response.json({ success: false, message: 'No Providers are available at this time'});
+                        return;
+                      }
+                    });
+                  } else if (provider[i] && data.status == 'pending') {
+                    io.sockets.to(provider[i].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
+                  }
+                }              
+              })
+            } else {
+              response.json({ success: false, message: 'No Providers are available at this time', error: err});
+            }
         }, 10000);
-        
       }
+     
     }).catch(error => {
       console.log('error', customer_location_data)
     });
     // initiating the agreement
     //   
-  }).catch(err => res.json(err ));
+  }).catch(err => {
+    console.log(err)
+    response.json({error : err} )
+  });
 });
 
 // agreements route for delete service
@@ -130,6 +137,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
   // route to confirm the agreement between provider and customer
   agreementsRouter.post('/confirmAgreement', ( req, res ) => {
       let payload = req.body;
+      console.log('----->', req.body);
       agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , { $set: {
         provider_Id : payload.provider_Id,
         status      : 'accepted' }

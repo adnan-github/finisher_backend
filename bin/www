@@ -24,8 +24,8 @@ app.set('securePort', port + 443);
 
 var server  = http.createServer(app);
 var io      = require('socket.io').listen(server, {
-  pingTimeout: 30000,
-  pingInterval: 30000
+  pingTimeout: 40000,
+  pingInterval: 40000
 });
 io.set('transports', ['websocket']);
 /** 
@@ -56,6 +56,7 @@ app.io = io.sockets.on('connection', (socket) => {
     if(action.type == 'server/update-location'){
       if(action.payload.userType == 'provider' ){
         socket.type = 'provider';
+        console.log('', action.payload)
         provider_location.updateProviderLocation( action.payload, socket.id );
       }
       if(action.payload.userType == 'customer'){

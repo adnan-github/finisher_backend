@@ -79,8 +79,6 @@ agreementsRouter.post('/initiate', (request, response, next) => {
                   }
                 }              
               })
-            } else {
-              response.json({ success: false, message: 'No Providers are available at this time'});
             }
         }, 10000);
       }

@@ -36,14 +36,11 @@ agreementsRouter.post('/initiate', (request, response, next) => {
             agreement_type    : request.body.agreement_type,
             agreement_rate    : request.body.agreement_rate
     //       socketId          : data.socketId
-      }), (err, data ) => {
-        if ( err ){
-          response.json({ success: false, message: 'unable to initiate agreement ', err: err});
-        }
-        else {
-          contract_id = data._id;
-          
-        }
+      })).then( data => {
+        contract_id = data._id;
+        customer_object.agreement_id = contract_id;
+      }).catch( error => {
+        response.json({ success: false, message: 'unable to initiate agreement ', error: error});
       }); // agreement creation request ends here 
   
     customer_location_data.geometry.lat = data.coordinate.coordinates[1]; 
@@ -51,7 +48,6 @@ agreementsRouter.post('/initiate', (request, response, next) => {
     
     console.log(customer_location_data)
     nearby_providers_Location(customer_location_data).then(provider => {
-      console.log('', provider)
       customer_object.agreement_id = contract_id;
       io.sockets.to(provider[0].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
       for (let i = 0; i < provider.length; i++) {

@@ -19,12 +19,17 @@ customer_su_msg = ( Name ) => {
     let message = 'Hello ' + Name + ', thank you for joining Finisher Network, login to your account to get the best services ';
     return message;
 };
+pro_arrived_msg = ( phone, name ) => {
+    let message = 'Hi ' + Name + ', your provider is arrived at your location, happy contract with Finisher';
+    return message;
+}
 
  module.exports = {
     signup_message                  : provider_su_msg,
     phone_verification_message      : pv_msg,
     profile_verification_message    : pro_ver_msg,
-    customer_signup_message         : customer_su_msg 
+    customer_signup_message         : customer_su_msg,
+    provider_arrived_message        : pro_arrived_msg 
  };
 
 

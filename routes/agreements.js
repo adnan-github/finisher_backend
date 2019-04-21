@@ -8,6 +8,9 @@ var agreementsModel     = require('../models/agreements');
 var authenticate        = require('../middlewares/customer_passport');
 var customers_Location  = require('../socket_controllers/customer_location').populateCustomersRecord;
 var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
+
+var sendSMS           = require('../utils/sendSMS');
+var { provider_arrived_message } = require('../utils/message_store');
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
@@ -33,8 +36,7 @@ agreementsRouter.post('/initiate', (request, response, next) => {
             customer_id       : request.body.customer_id,
             selected_service  : request.body.selected_service,
             status            : 'pending',
-            agreement_type    : request.body.agreement_type,
-            agreement_rate    : request.body.agreement_rate
+            agreement_type    : request.body.agreement_type
     //       socketId          : data.socketId
       })).then( data => {
         contract_id = data._id;
@@ -137,17 +139,44 @@ agreementsRouter.get('/:id', (req, res, next) => {
         status      : 'accepted' }
        }, (err, obj ) => {
         customers_Location(obj.customer_id).then( data => {
-          res.status = 200;
           res.json({ success: true, data: data});
           io.sockets.to(data.socketId).emit('action', {
             type    : 'AGREEMENT_ACCEPTED',
             payload : req.body 
           });
         }).catch(err => {
-          res.status = 404;
           res.json({ success: false, error: err});
         })
        }).select('customer_id -_id');
+  });
+
+  agreementsRouter.post('providerArrived', (req, res) => {
+    let payload = req.body;
+    customers_Location(payload.customer_id).then( customer_data => {
+      io.sockets.to(customer_data.socketId).emit('action', {
+        type  : 'PROVIDER-ARRIVED'
+      });
+      sendSMS.sendSMSToPhone(customer_data.customerId.username, signup_message( customer_data.customerId.name));
+      res.json({ success: true, message: 'successfully sent message to customer'});
+    }).catch( error => res.json({ success: false, message: 'unable to send arrive notification to customer', error: error}));
+  });
+
+  agreementsRouter.post('startAgreement', (req, res) => {
+    let payload = req.body;
+    agreementsModel.findByIdAndUpdate({_id: ObjectId(payload.agreement_id)}, { $set : {
+      status: 'started',
+      agreement_rate: payload.agreement_rate
+    }}, ( err, agreement) => {
+      if( agreement.status == 'started' && agreement.agreement_rate ){
+        res.json({ success: true, message: 'successfully started the agreement', data: agreement})
+      } else {
+        res.json({ success: false, message: 'unable to start the contract'});
+      }
+    });
+  });
+
+  agreementsRouter.post('trackAgreementTime', (req, res) => {
+    
   });
 
 module.exports = agreementsRouter;

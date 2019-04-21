@@ -56,7 +56,7 @@ app.io = io.sockets.on('connection', (socket) => {
     if(action.type == 'server/update-location'){
       if(action.payload.userType == 'provider' ){
         socket.type = 'provider';
-        console.log('', action.payload)
+        console.log('-------> action', action.payload)
         provider_location.updateProviderLocation( action.payload, socket.id );
       }
       if(action.payload.userType == 'customer'){

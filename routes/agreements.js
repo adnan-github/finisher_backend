@@ -154,7 +154,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
     let payload = req.body;
     customers_Location(payload.customer_id).then( customer_data => {
       io.sockets.to(customer_data.socketId).emit('action', {
-        type  : 'PROVIDER-ARRIVED'
+        type  : 'PROVIDER_ARRIVED'
       });
       sendSMS.sendSMSToPhone(customer_data.customerId.username, signup_message( customer_data.customerId.name));
       res.json({ success: true, message: 'successfully sent message to customer'});

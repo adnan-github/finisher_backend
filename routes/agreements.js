@@ -152,6 +152,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
 
   agreementsRouter.post('providerArrived', (req, res) => {
     let payload = req.body;
+    console.log('start it', payload)
     customers_Location(payload.customer_id).then( customer_data => {
       io.sockets.to(customer_data.socketId).emit('action', {
         type  : 'PROVIDER_ARRIVED'

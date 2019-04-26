@@ -39,6 +39,9 @@ const agreementsSchema = new Schema({
     customer_socket: {
         type: String
     },
+    agreement_rate: {
+        type: Number
+    },
     time: [timeTrackSchema]
 }, {        
     timestamps: true

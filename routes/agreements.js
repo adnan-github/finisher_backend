@@ -17,79 +17,73 @@ agreementsRouter.use(bodyParser.json());
 
 
 // agreements route for new service
-agreementsRouter.post('/initiate', (request, response, next) => {
-  
-  customers_Location(request.body.customer_id).then( data => {
+agreementsRouter.post('/initiate', async (request, response) => {
     let contract_id = '';
     let customer_location_data = {};
     customer_location_data.geometry = {};
-
-    let customer_object = {
-          name            : data.customerId.name,
-          address         : data.address,
-          phone           : data.customerId.phone,
-          agreement_type  : request.body.agreement_type,
-          category        : request.body.selected_service
-    };
-
-    agreementsModel.create(new agreementsModel({
-            customer_id       : request.body.customer_id,
-            selected_service  : request.body.selected_service,
-            status            : 'pending',
-            agreement_type    : request.body.agreement_type
-    //       socketId          : data.socketId
-      })).then( data => {
-        contract_id = data._id;
-        customer_object.agreement_id = contract_id;
-      }).catch( error => {
-        response.json({ success: false, message: 'unable to initiate agreement ', error: error});
-      }); // agreement creation request ends here 
+    let created_agreement = {};
   
-    customer_location_data.geometry.lat = data.coordinate.coordinates[1]; 
-    customer_location_data.geometry.lng = data.coordinate.coordinates[0];
-    
-    console.log(customer_location_data)
-    nearby_providers_Location(customer_location_data).then(provider => {
-      customer_object.agreement_id = contract_id;
-      io.sockets.to(provider[0].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
-      for (let i = 0; i < provider.length; i++) {
-        setTimeout(() => {
-            if ( i > 0 && i <= provider.length) {
-              agreementsModel.findById({ _id: ObjectId(contract_id)}, ( err, data ) => {
-                if(err) {
-                  console.log(err)
-                  response.json({ success: false, message: 'No Providers are available at this time', error: err});
-                  return;
-                } else {
-                  if(data.status == 'accepted') {
-                    response.json({ success: true, message: 'agreement initiated successfully'});
-                    return;
-                  }
-                  else if(data.status == 'pending' && !provider[i]){              
-                    agreementsModel.deleteOne({ _id: ObjectId(contract_id)}, (err, data) => {
-                      if(data){
-                        response.json({ success: false, message: 'No Providers are available at this time'});
-                        return;
-                      }
-                    });
-                  } else if (provider[i] && data.status == 'pending') {
-                    io.sockets.to(provider[i].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
-                  }
-                }              
-              })
-            }
-        }, 10000);
+  let customer_details = await customers_Location(request.body.customer_id);
+  let customer_object = {
+    name            : customer_details.customerId.name,
+    address         : customer_details.address,
+    phone           : customer_details.customerId.phone,
+    agreement_type  : request.body.agreement_type,
+    category        : request.body.selected_service
+};
+
+  try {
+     created_agreement = await agreementsModel.create(new agreementsModel({
+      customer_id       : request.body.customer_id,
+      selected_service  : request.body.selected_service,
+      status            : 'pending',
+      agreement_type    : request.body.agreement_type,
+      agreement_rate    : request.body.agreement_rate
+    }));
+  } catch (error) {
+    response.json({ success: false, message: 'unable to initiate agreement', error: error});
+  }
+
+  contract_id = created_agreement._id;
+  customer_location_data.geometry.lat   = customer_details.coordinate.coordinates[1]; 
+  customer_location_data.geometry.lng   = customer_details.coordinate.coordinates[0];
+
+  let providers_list = await nearby_providers_Location(customer_location_data);
+  console.log('this is newly sent providers list', providers_list);
+  customer_object.agreement_id = created_agreement._id;
+  io.sockets.to(providers_list[0].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
+  // checking if agreenent is assigned to a provider else the request will be sent
+  // to next provider
+  let contract_status = '';
+  for ( loop = 0; loop <= providers_list.length; loop ++) {
+    if( contract_status !== '' ) {
+      if( contract_status == 'accepted') { 
+        response.json({ success: true, message: 'provider accepted your request'});
+      } else {
+        response.json({ success: false, message: 'no providers are available at this time'});
       }
-     
-    }).catch(error => {
-      console.log('error', customer_location_data)
-    });
-    // initiating the agreement
-    //   
-  }).catch(err => {
-    console.log(err)
-    response.json({error : err} )
-  });
+      break;
+    }
+    else{
+      setTimeout( async () => {
+        let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)});
+        console.log('status of agreement', agreement.status);
+        if ( loop == providers_list.length ) {
+              if( agreement.status == 'accepted') {
+                contract_status = agreement.status;
+              } else {
+                agreementsModel.deleteOne({ _id: ObjectId(contract_id)});
+                contract_status = agreement.status;
+              }
+            } else if ( agreement.status == 'pending' && loop !== providers_list.length) {
+              io.sockets.to(providers_list[i].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
+            } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
+                contract_status = agreement.status;  
+            }
+      }, 10000);
+    }
+  }
+
 });
 
 // agreements route for delete service

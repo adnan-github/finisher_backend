@@ -279,7 +279,7 @@ providersRouter.post('/deleteall', (req, res) => {
 
 providersRouter.delete('/deleteByPhone', ( req, res ) => {
     providersModel.deleteOne({ username: req.body.phone }, ( err, dbResponse) => {
-      if(res){
+      if(dbResponse){
         res.send({ success: true, message: 'deleted successfully', data: dbResponse});
       } else {
         res.json({ success: true, message: 'unable to delete', data: err})

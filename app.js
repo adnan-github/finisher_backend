@@ -16,6 +16,7 @@ var servicesRouter      = require('./routes/services');
 var agreementsRouter    = require('./routes/agreements');
 var providersRouter     = require('./routes/provider/providers');
 var adminRouter         = require('./routes/admin/adminRouter');
+var promocodesRouter    = require('./routes/promoCodes');
 
 
 //middlwares
@@ -44,7 +45,7 @@ app.use('/api/services', servicesRouter);
 app.use('/api/agreements', agreementsRouter);
 app.use('/api/providers', providersRouter);
 app.use('/api/admin', adminRouter);
-
+app.use('/api/promocodes', promocodesRouter);
 mongoConnect();
 
 // view engine setup

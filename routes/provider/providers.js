@@ -287,7 +287,7 @@ providersRouter.delete('/deleteByPhone', ( req, res ) => {
     });
 });
 
-providersRouter.delete('/pushNotificationToken', async (req, res) => {
+providersRouter.post('/pushNotificationToken', async (req, res) => {
 
   if ( !expo_sdk.Expo.isExpoPushToken( req.body.push_token ) )
     res.json({ success: false, message: 'provided token is not a valid expo push notification token', data: req.body.push_token});

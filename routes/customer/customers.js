@@ -163,21 +163,22 @@ customerRouter.delete('/deleteByNumber', (req, res) => {
   });
 });
 
-customerRouter.post('/pushNotificationToken', async (req, res) => {
-
-  if ( !expo_sdk.Expo.isExpoPushToken( req.body.push_token ) )
-    res.json({ success: false, message: 'provided token is not a valid expo push notification token', data: req.body.push_token});
-
-  let query     = { username: req.body.phone },
+customerRouter.post('/pushNotificationToken', async (req, res, next) => {
+  if ( expo_sdk.Expo.isExpoPushToken( req.body.push_token ) ){
+    let query     = { username: req.body.phone },
       update    = { push_token: req.body.push_token },
       options   = { upsert: true, new: true };
 
-  let customer  = await customerModel.findOneAndUpdate( query, update, options ).select('-_id username push_token');
-  if ( customer.push_token ){
-    res.json({ success: true, message: 'successfully added push notification id', data: customer});
+    let customer  = await customerModel.findOneAndUpdate( query, update, options ).select('-_id username push_token');
+    if ( customer.push_token ){
+      res.json({ success: true, message: 'successfully added push notification id', data: customer});
+    } else {
+      res.json({ success: false, message: 'unable to add push notification id'})
+    }
   } else {
-    res.json({ success: false, message: 'unable to add push notification id'})
+    res.json({ success: false, message: 'provided token is not a valid expo push token'})
   }
+
 });
 
 module.exports = customerRouter;

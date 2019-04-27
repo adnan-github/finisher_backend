@@ -125,26 +125,25 @@ agreementsRouter.get('/:id', (req, res, next) => {
 
 
   // route to confirm the agreement between provider and customer
-  agreementsRouter.post('/confirmAgreement', ( req, res ) => {
-      let payload = req.body;
-      console.log('----->', req.body);
-      agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id } , { $set: {
-        provider_Id : payload.provider_Id,
-        status      : 'accepted' }
-       }, (err, obj ) => {
-        customers_Location(obj.customer_id).then( data => {
-          res.json({ success: true, data: data});
-          io.sockets.to(data.socketId).emit('action', {
-            type    : 'AGREEMENT_ACCEPTED',
-            payload : req.body 
-          });
-        }).catch(err => {
-          res.json({ success: false, error: err});
-        })
-       }).select('customer_id -_id');
+  agreementsRouter.post('/confirmAgreement', async ( req, res ) => {
+      let payload   = req.body;
+      let agreement = await agreementsModel.findById({_id: payload.agreement_id}).select('customer_id -_id');
+      if(agreement.status == 'accepted' ){
+        res.json({ success: false, message: 'agreement already awarded to another provider'});
+      } else {
+        let updated_agreement = await agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id} , {
+          $set : { provider_Id: payload.provider_Id, status: 'accepted' }
+        });
+        let customer_detail = customers_Location( updated_agreement.customer_id );
+        io.sockets.to(customer_detail.socketId).emit('action', {
+          type    : 'AGREEMENT_ACCEPTED',
+          payload : req.body
+        });
+        res.json({ success: true, message: 'successfully confirmed the agreement', data: customer_detail});
+      }
   });
 
-  agreementsRouter.post('providerArrived', (req, res) => {
+  agreementsRouter.post('/providerArrived', (req, res) => {
     let payload = req.body;
     console.log('start it', payload)
     customers_Location(payload.customer_id).then( customer_data => {

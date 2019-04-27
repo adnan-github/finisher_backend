@@ -23,6 +23,12 @@ const customersSchema = new Schema({
         required: true,
         maxlength: 20,
         minlength: 8
+    },
+    push_token: {
+        type: String
+    },
+    socket_id: {
+        type: String
     }
 }, {
     timestamps: true

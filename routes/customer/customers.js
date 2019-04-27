@@ -3,6 +3,7 @@ var passport    = require('passport');
 var bodyParser  = require('body-parser');
 var jwt_decode  = require('jwt-decode');
 var mongoose    = require('mongoose');
+let expo_sdk    = require('expo-server-sdk');
 // custom modules
 
 var sendSMS           = require('../../utils/sendSMS');
@@ -162,5 +163,21 @@ customerRouter.delete('/deleteByNumber', (req, res) => {
   });
 });
 
+customerRouter.delete('/pushNotificationToken', async (req, res) => {
+
+  if ( !expo_sdk.Expo.isExpoPushToken( req.body.push_token ) )
+    res.json({ success: false, message: 'provided token is not a valid expo push notification token', data: req.body.push_token});
+
+  let query     = { username: req.body.phone },
+      update    = { push_token: req.body.push_token },
+      options   = { upsert: true, new: true };
+
+  let customer  = await customerModel.findOneAndUpdate( query, update, options ).select('-_id username push_token');
+  if ( customer.push_token ){
+    res.json({ success: true, message: 'successfully added push notification id', data: customer});
+  } else {
+    res.json({ success: false, message: 'unable to add push notification id'})
+  }
+});
 
 module.exports = customerRouter;

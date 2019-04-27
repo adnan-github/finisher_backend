@@ -32,6 +32,12 @@ const providerSchema = new Schema({
     isVerified: {
         type: Boolean,
         default: false
+    },
+    push_token: {
+        type: String
+    },
+    socket_id: {
+        type: String
     }
 }, {
     timestamps: true

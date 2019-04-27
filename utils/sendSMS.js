@@ -9,7 +9,7 @@ sendSMS = ( toNumber, toMessage ) => {
         // creating request body to send SMS
         const requestPath = '/api/sendsms.php?id=' + process.env.finisher_id + 
                             '&key=' + process.env.finisher_key + '&' +
-                            queryString.stringify({ msg: toMessage}) +
+                            queryString.stringify({ msg: toMessage }) +
                             '&to=' + toNumber +
                             '&mask=' + process.env.finisher_mask;
 

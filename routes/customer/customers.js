@@ -115,31 +115,29 @@ customerRouter.get('/all', (req, res) => {
   });
 });
 
-customerRouter.post('/verifyPhone', (req, res) => {
+customerRouter.post('/verifyPhone', async (req, res) => {
   let generatedCode = Math.floor(1000 + Math.random() * 9000);
   let query   = { phone: req.body.phone },
       update  = { code: generatedCode },
       options = { upsert: true, new: true, setDefaultsOnInsert: true };
   
-  customerModel.findOne({ username: req.body.phone }, 'username').exec(function (error, customer) {
-
-    if(customer && customer.username){
-      res.json({ success: false, message: 'phone number already in use', data: customer.username });
-    } else if(error) {
-      res.json({ success: false, message: 'error in updating database', error: error });
-    } else if( !customer ){
-      phoneVerifyModel.findOneAndUpdate(query, update, options, ( error, phoneData ) => {
-        if (error) {
-          res.setHeader('Content-Type', 'application/json');
-          res.json({  success: false, message: 'unable to add phone to db', error: error  });
-        } else {
-
-          sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message( phoneData.code ));
-            res.json({ success: true, status: 'phone added to DB', data: phoneData.phone});
+      let customer = await customerModel.findOne({ username: req.body.phone}, 'username');
+      if(customer && customer.username){
+        res.json({ success: false, message: 'phone number already in use', data: customer.username, exists: true });
+      } else if( !customer ){
+        try {
+          let phoneData = await phoneVerifyModel.findOneAndUpdate(query, update, options).select('phone code -_id');  
+          let SMSResponse = await sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message ( phoneData.code));
+          if ( SMSResponse.type == 'success') {
+            res.json({ success: true, message: 'phone added to DB', data: phoneData.phone});
+          } else {
+            res.json( { success: false, message: 'unable to add phone to the db', error: SMSResponse.response})
+          }
+        } catch (error) {
+          res.json({ success: false, message: 'error in updating database', error: error });    
         }
-      }).select('phone code -_id');
-    }
-  });
+        
+      }
 });
 
 customerRouter.post('/matchCode', (req, res) => {

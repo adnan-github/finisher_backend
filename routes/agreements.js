@@ -155,7 +155,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
     }).catch( error => res.json({ success: false, message: 'unable to send arrive notification to customer', error: error}));
   });
 
-  agreementsRouter.post('startAgreement', (req, res) => {
+  agreementsRouter.post('/startAgreement', (req, res) => {
     let payload = req.body;
     agreementsModel.findByIdAndUpdate({_id: ObjectId(payload.agreement_id)}, { $set : {
       status: 'started',
@@ -169,7 +169,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
     });
   });
 
-  agreementsRouter.post('trackAgreementTime', (req, res) => {
+  agreementsRouter.post('/trackAgreementTime', (req, res) => {
 
   });
 

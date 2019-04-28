@@ -134,7 +134,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
         let updated_agreement = await agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id} , {
           $set : { provider_Id: payload.provider_Id, status: 'accepted' }
         });
-        let customer_detail = customers_Location( updated_agreement.customer_id );
+        let customer_detail = await customers_Location( updated_agreement.customer_id );
         io.sockets.to(customer_detail.socketId).emit('action', {
           type    : 'AGREEMENT_ACCEPTED',
           payload : req.body

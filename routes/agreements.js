@@ -75,7 +75,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
                 agreementsModel.deleteOne({ _id: ObjectId(contract_id)});
                 contract_status = agreement.status;
               }
-            } else if ( agreement.status == 'pending' && loop !== providers_list.length) {
+            } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
               io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
             } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
                 contract_status = agreement.status;  
@@ -144,16 +144,19 @@ agreementsRouter.get('/:id', (req, res, next) => {
       }
   });
 
-  agreementsRouter.post('/providerArrived', (req, res) => {
+  agreementsRouter.post('/providerArrived', async (req, res) => {
     let payload = req.body;
-    console.log('start it', payload)
-    customers_Location(payload.customer_id).then( customer_data => {
+    let customer_data = await customers_Location ( payload.customer_id);
+    console.log('start it', customer_data.socketId);
+    if( customer_data ) { 
       io.sockets.to(customer_data.socketId).emit('action', {
-        type  : 'PROVIDER_ARRIVED'
+        type    : 'PROVIDER_ARRIVED'
       });
-      sendSMS.sendSMSToPhone(customer_data.customerId.username, signup_message( customer_data.customerId.name));
+      sendSMS.sendSMSToPhone(customer_data.customerId.username, provider_arrived_message( customer_data.customerId.name));
       res.json({ success: true, message: 'successfully sent message to customer'});
-    }).catch( error => res.json({ success: false, message: 'unable to send arrive notification to customer', error: error}));
+    } else {
+      res.json({ success: false, message: 'unable to find customer data for the provided id'});
+    }
   });
 
   agreementsRouter.post('/startAgreement', (req, res) => {

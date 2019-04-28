@@ -12,6 +12,7 @@ var sendSMS           = require('../../utils/sendSMS');
 var providersModel    = require('../../models/providers');
 var phoneVerifyModel  = require('../../models/phoneVerify');
 var authenticate      = require('../../middlewares/provider_passport');
+var ObjectId          = require('mongoose').Types.ObjectId;
 
 var { signup_message, phone_verification_message }  = require('../../utils/message_store');
 
@@ -303,5 +304,17 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
   } else {
     res.json({ success: false, message: 'provided token is not a valid expo push token'})
   }
+});
+
+//Get Single provider and emit track by customer to provider
+
+providersRouter.get("/providerLocation/:id", function(req, res, next){
+	var io = req.app.io;
+    providersLocationModel.findById({ _id: ObjectId(req.params.id)},function(err, location){
+        if (err){
+            res.json({ success: false, message: 'unable to get providers location', error: err});
+        }
+        res.json({ success: true, message: 'provider location got successfully', data: location})
+    });
 });
 module.exports = providersRouter;

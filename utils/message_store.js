@@ -19,8 +19,8 @@ customer_su_msg = ( Name ) => {
     let message = 'Hello ' + Name + ', thank you for joining Finisher Network, login to your account to get the best services ';
     return message;
 };
-pro_arrived_msg = ( phone, name ) => {
-    let message = 'Hi ' + Name + ', your provider is arrived at your location, happy contract with Finisher';
+pro_arrived_msg = ( name ) => {
+    let message = 'Hi ' + name + ', your provider is arrived at your location, happy contract with Finisher';
     return message;
 }
 

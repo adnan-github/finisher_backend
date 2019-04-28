@@ -3,7 +3,6 @@ var bodyParser  = require('body-parser');
 
 // custom modules
 var providerLocationModel   = require('../../models/providersLocation');
-var Validate        = require('../../validators/userValidation');
 var authenticate    = require('../../middlewares/provider_passport');
 
 // provider Location route settings
@@ -39,55 +38,11 @@ providerLocationRouter.get("/providerLocation/:id", function(req, res, next){
 	var io = req.app.io;
     providerLocationModel.findOne({providerId: req.params.id},function(err, location){
         if (err){
-            res.send(err);
+            res.json({ success: false, message: 'unable to get providers location', error: err});
         }
-        res.send(location);
-        io.emit("provider", location);
+        res.json({ success: true, message: 'provider location got successfully', data: location})
     });
 });
 
-//Update Location by provider to customer
-providerLocationRouter.put("/providerLocation/:id", function(req, res, next){
-    var io = req.app.io;
-    var location = req.body;
-    var latitude = parseFloat(location.latitude);
-    var longitude = parseFloat(location.longitude);
-    if (!location){
-        res.status(400);
-        res.json({
-            "error":"Bad Data"
-        });
-    } else {
-        providerLocationModel.update({_id: (req.params.id)},{ $set: {
-        	socketId:location.socketId,
-        	coordinate:{
-                "type": "Point",
-        		coordinates:[
-                    longitude,
-        			latitude
-    			]
-    		}
-    	}}, function(err, updateDetails){
-        if (err){
-            console.log(updateDetails);
-            res.send(err);
-        }
-        if (updateDetails){
-
-            //Get updated location
-            providerLocationModel.findOne({_id: (req.params.id)},function(error, updatedLocation){
-                if (error){
-                    res.send(error);
-                }
-                res.send(updatedLocation);
-                io.emit("action", {
-                    type:"UPDATE_PROVIDER_LOCATION",
-                    payload:updatedLocation
-                });
-            });
-        }
-    });
-    }
-});
 
 module.exports = providerLocationRouter;

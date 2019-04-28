@@ -64,7 +64,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
       }
       break;
     }
-    else{
+    else {
       setTimeout( async () => {
         let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)});
         console.log('status of agreement', agreement.status);
@@ -76,7 +76,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
                 contract_status = agreement.status;
               }
             } else if ( agreement.status == 'pending' && loop !== providers_list.length) {
-              io.sockets.to(providers_list[i].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
+              io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
             } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
                 contract_status = agreement.status;  
             }

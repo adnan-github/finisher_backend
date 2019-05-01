@@ -40,7 +40,7 @@ const agreementsSchema = new Schema({
         type: String
     },
     agreement_rate: {
-        type: Number
+        type: String
     },
     time: [timeTrackSchema]
 }, {        

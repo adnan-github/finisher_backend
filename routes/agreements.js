@@ -55,7 +55,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
   // checking if agreenent is assigned to a provider else the request will be sent
   // to next provider
   let contract_status = '';
-  for ( loop = 0; loop <= providers_list.length; loop ++) {
+  for ( let loop = 0; loop <= providers_list.length; loop ++) {
     if( contract_status !== '' ) {
       if( contract_status == 'accepted') { 
         response.json({ success: true, message: 'provider accepted your request'});
@@ -76,6 +76,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
                 contract_status = agreement.status;
               }
             } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
+              console.log(loop, 'on server');
               io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
             } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
                 contract_status = agreement.status;  
@@ -146,17 +147,30 @@ agreementsRouter.get('/:id', (req, res, next) => {
 
   agreementsRouter.post('/providerArrived', async (req, res) => {
     let payload = req.body;
-    let customer_data = await customers_Location ( payload.customer_id);
-    console.log('start it', customer_data.socketId);
-    if( customer_data ) { 
-      io.sockets.to(customer_data.socketId).emit('action', {
-        type    : 'PROVIDER_ARRIVED'
-      });
-      sendSMS.sendSMSToPhone(customer_data.customerId.username, provider_arrived_message( customer_data.customerId.name));
-      res.json({ success: true, message: 'successfully sent message to customer'});
-    } else {
-      res.json({ success: false, message: 'unable to find customer data for the provided id'});
+
+    let response_data = {};
+    response_data.customer_data   = {};
+    response_data.agreement_data  = {};
+    try {
+      let customer_data   = await customers_Location ( payload.customer_id);
+      let agreement_data  = await agreementsModel.findById({ _id: ObjectId(payload.agreement_id)});
+      
+      response_data.agreement_data  = agreement_data;
+
+      if( customer_data ) { 
+        io.sockets.to(customer_data.socketId).emit('action', {
+          type    : 'PROVIDER_ARRIVED', 
+          payload : response_data
+        });
+        sendSMS.sendSMSToPhone(customer_data.customerId.username, provider_arrived_message( customer_data.customerId.name));
+        res.json({ success: true, message: 'successfully sent message to customer'});
+      } else {
+        res.json({ success: false, message: 'unable to find customer data for the provided id'});
+      }
+    } catch (error) {
+      res,json({ success: false, message: 'unable to inform customer', error: error});
     }
+
   });
 
   agreementsRouter.post('/startAgreement', (req, res) => {
@@ -174,7 +188,9 @@ agreementsRouter.get('/:id', (req, res, next) => {
   });
 
   agreementsRouter.post('/trackAgreementTime', (req, res) => {
-
+    console.log('track agreement time', req.body);
   });
+
+  
 
 module.exports = agreementsRouter;

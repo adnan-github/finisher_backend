@@ -201,29 +201,42 @@ providersRouter.get('/info', (req, res, next) => {
     });
 });
 
-providersRouter.get('/checkphone', ( req, res, next ) => {
-    const data = req.query;
-    providersModel.find({ phone: data.phone }, (err, user ) => {
-      if ( user.phone ){
-        res.json({
-          success : true,
-          message : 'phone number correct'
-        });
-      } else {
-        res.json({
-          success : false,
-          message : 'phone number not found for the associated account'
-        });
-      }
-    });
-});
 
+providersRouter.post('/checkPhone', async ( req, res ) => {
+  const phone = req.body.phone;
+  let generatedCode = Math.floor(1000 + Math.random() * 9000);
+  let query   = { phone: req.body.phone },
+      update  = { code: generatedCode },
+      options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+  providersModel.findOne({ username: phone }, async ( error, provider ) => {
+    if ( provider ) {
+      try {
+        let phoneData = await phoneVerifyModel.findOneAndUpdate(query, update, options).select('phone code -_id');  
+        let SMSResponse = await sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message ( phoneData.code));
+        if ( SMSResponse.type == 'success') {
+          res.json({ success: true, message: 'phone added to DB', data: phoneData.phone});
+        } else {
+          res.json( { success: false, message: 'unable to add phone to the db', error: SMSResponse.response})
+        }
+      } catch (error) {
+        res.json({ success: false, message: 'error in checking user with provided phone number', error: error }); 
+      }
+    } else if ( error ){
+      res.json({ success: false, message: 'No user found with this phone number', error: error }); 
+    } else {
+      res.json({ success: false, message: 'No user found with this phone number' }); 
+    }
+  })
+});
 
 providersRouter.put('/updatepassword', ( req, res, next ) => {
     const data = req.body;
-    providersModel.findByIdAndUpdate( data.provider_id, { password  : data.password }, (err, user ) => {
+    providersModel.findByIdAndUpdate( data.phone, { $set: {password  : data.password }}, (error, user ) => {
       if ( user._id ){
         res.json({ success : true, message : 'password updated', provider_id : user._id });
+      } else if( error ){
+        res.json({ success : false, message : 'unable to update password', error: error });
       } else {
         res.json({ success : false, message : 'unable to update password' });
       }

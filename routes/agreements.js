@@ -5,9 +5,9 @@ var ObjectId    = require('mongoose').Types.ObjectId;
 
 // custom modules
 var agreementsModel     = require('../models/agreements');
-var authenticate        = require('../middlewares/customer_passport');
 var customers_Location  = require('../socket_controllers/customer_location').populateCustomersRecord;
 var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
+var providersWithRequests = require('../models/providersWithRequests');
 
 var sendSMS           = require('../utils/sendSMS');
 var { provider_arrived_message } = require('../utils/message_store');
@@ -56,34 +56,35 @@ agreementsRouter.post('/initiate', async (request, response) => {
   // to next provider
   let contract_status = '';
   for ( let loop = 0; loop <= providers_list.length; loop ++) {
-    if( contract_status !== '' ) {
-      if( contract_status == 'accepted') { 
-        response.json({ success: true, message: 'provider accepted your request'});
-      } else {
-        response.json({ success: false, message: 'no providers are available at this time'});
-      }
-      break;
-    }
-    else {
       setTimeout( async () => {
-        let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)});
-        console.log('status of agreement', agreement.status);
-        if ( loop == providers_list.length ) {
-              if( agreement.status == 'accepted') {
-                contract_status = agreement.status;
-              } else {
-                agreementsModel.deleteOne({ _id: ObjectId(contract_id)});
-                contract_status = agreement.status;
+        if( contract_status !== '' ) {
+          if( contract_status == 'accepted') { 
+            response.json({ success: true, message: 'provider accepted your request'});
+          } else {
+            response.json({ success: false, message: 'no providers are available at this time'});
+          }
+        } else {
+          let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)});
+          console.log('status of agreement', agreement.status);
+          if ( loop == providers_list.length ) {
+                if( agreement.status == 'accepted') {
+                  contract_status = agreement.status;
+                } else {
+                  agreementsModel.deleteOne({ _id: ObjectId(contract_id)});
+                  contract_status = agreement.status;
+                }
+              } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
+                console.log(loop, 'on server');
+                let checkRequest = await providersWithRequests.find({ providerId: providers_list[loop].providerId});
+                if( !checkRequest ){
+                  io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object});
+                }
+              } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
+                  contract_status = agreement.status;  
               }
-            } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
-              console.log(loop, 'on server');
-              io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object})
-            } else if ( agreement.status == 'accepted' && loop !== providers_list.length ) {
-                contract_status = agreement.status;  
-            }
-      }, 10000);
+        }
+      }, 11000);
     }
-  }
 
 });
 

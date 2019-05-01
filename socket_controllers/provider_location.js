@@ -49,10 +49,10 @@ module.exports = {
                             "type":"Point",
                             "coordinates": [ parseFloat(longitude), parseFloat(latitude) ]
                         },
-                        "$maxDistance":20000
+                        "$maxDistance":15000
                     } 
                 }
-            }).select('coordinate.coordinates socketId').then( data => {
+            }).select('coordinate.coordinates socketId providerId').limit(6).then( data => {
                 resolve(data);
             }).catch( err => {
                 reject( err );

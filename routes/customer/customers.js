@@ -153,6 +153,34 @@ customerRouter.post('/matchCode', (req, res) => {
   });
 });
 
+customerRouter.post('/checkPhone', async ( req, res ) => {
+  const phone = req.body.phone;
+  let generatedCode = Math.floor(1000 + Math.random() * 9000);
+  let query   = { phone: req.body.phone },
+      update  = { code: generatedCode },
+      options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+  customerModel.findOne({ username: phone }, async ( error, customer ) => {
+    if ( customer ) {
+      try {
+        let phoneData = await phoneVerifyModel.findOneAndUpdate(query, update, options).select('phone code -_id');  
+        let SMSResponse = await sendSMS.sendSMSToPhone( phoneData.phone, phone_verification_message ( phoneData.code));
+        if ( SMSResponse.type == 'success') {
+          res.json({ success: true, message: 'phone added to DB', data: phoneData.phone});
+        } else {
+          res.json( { success: false, message: 'unable to add phone to the db', error: SMSResponse.response})
+        }
+      } catch (error) {
+        res.json({ success: false, message: 'error in checking user with provided phone number', error: error }); 
+      }
+    } else if ( error ){
+      res.json({ success: false, message: 'No user found with this phone number', error: error }); 
+    } else {
+      res.json({ success: false, message: 'No user found with this phone number' }); 
+    }
+  })
+});
+
 customerRouter.delete('/deleteByNumber', (req, res) => {
   customerModel.deleteOne({ username: req.body.phone }, ( error, data ) => {
     if (error){
@@ -179,6 +207,19 @@ customerRouter.post('/pushNotificationToken', async (req, res, next) => {
     res.json({ success: false, message: 'provided token is not a valid expo push token'})
   }
 
+});
+
+customerRouter.put('/updatepassword', ( req, res ) => {
+  const data = req.body;
+  customerModel.findOneAndUpdate({ username: data.phone }, { $set:  {password  : data.password }}, (error, user ) => {
+    if ( user ){
+      res.json({ success : true, message : 'password updated', customer_id : user._id });
+    } else if( error ){
+      res.json({ success : false, message : 'unable to update password', error: error });
+    }else {
+      res.json({ success : false, message : 'unable to update password' });
+    }
+  }).select('_id');
 });
 
 module.exports = customerRouter;

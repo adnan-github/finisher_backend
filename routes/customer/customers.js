@@ -210,8 +210,8 @@ customerRouter.post('/pushNotificationToken', async (req, res, next) => {
 });
 
 customerRouter.put('/updatepassword', ( req, res ) => {
-  const data = req.body;
-  customerModel.findOneAndUpdate({ username: data.phone }, { $set:  {password  : data.password }}, (error, user ) => {
+  const payload = req.body;
+  customerModel.findOneAndUpdate({ username: payload.phone }, { $set:  {password  : payload.password }}, (error, user ) => {
     if ( user ){
       res.json({ success : true, message : 'password updated', customer_id : user._id });
     } else if( error ){

@@ -231,8 +231,8 @@ providersRouter.post('/checkPhone', async ( req, res ) => {
 });
 
 providersRouter.put('/updatepassword', ( req, res, next ) => {
-    const data = req.body;
-    providersModel.findByIdAndUpdate( data.phone, { $set: {password  : data.password }}, (error, user ) => {
+    const payload = req.body;
+    providersModel.findOneAndUpdate({ username: payload.phone }, { $set: {password  : payload.password }}, (error, user ) => {
       if ( user._id ){
         res.json({ success : true, message : 'password updated', provider_id : user._id });
       } else if( error ){

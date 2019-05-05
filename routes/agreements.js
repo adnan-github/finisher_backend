@@ -194,14 +194,13 @@ agreementsRouter.get('/:id', (req, res, next) => {
   agreementsRouter.post('/trackAgreementTime', async (req, res) => {
     let payload = req.body,
         query   = { _id: payload.agreement_id },
-        update  = { $push: { time: payload.timetrack }},
-        options = { upsert: false, new: true};
+        update  = { $push: { time: payload.timetrack }}
     
         try {      
           let agreement = await agreementsModel.findOne(query).lean().select('time');
           if( agreement ){
             console.log(agreement, 'checking');
-            let returned_time = await agreementsModel.findOneAndUpdate( query, update, options ).select('time').lean();
+            let returned_time = await agreementsModel.findOneAndUpdate( query, update ).select('time').lean();
             if ( returned_time ){
               res.json({ success: true, message: 'saved the time successfully'});
             }

@@ -174,7 +174,7 @@ providersRouter.post('/login', authenticate.authenticatProvider, (req, res) => {
           let token = authenticate.provider_generateToken({_id: provider._id});
           res.json({ success: true, token: token, message: 'Successfully Logged in..!!!'});
         }
-      });
+      }).select("_id isVerified").lean();
 });
 
 providersRouter.get('/info', (req, res, next) => {
@@ -230,7 +230,6 @@ providersRouter.put('/updatePassword', ( req, res ) => {
     const payload = req.body;
 
     providersModel.findOne({ username: payload.phone }, async (error, user ) => {
-      console.log(user, payload, 'user');
       if ( user ){
         let data = await user.setPassword(payload.password);
         user.save();
@@ -322,7 +321,8 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
 //Get Single provider and emit track by customer to provider
 
 providersRouter.get("/providerLocation/:id", function(req, res, next){
-	var io = req.app.io;
+  var io = req.app.io;
+  console.log(req.params);
     providersLocationModel.findById({ providerId: ObjectId(req.params.id)},function(err, location){
         if (err){
             res.json({ success: false, message: 'unable to get providers location', error: err});

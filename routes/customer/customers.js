@@ -46,18 +46,13 @@ customerRouter.post('/signup', (req, res, next) => {
 });
 
 // Route to login and create session for the Customer
-customerRouter.post('/login', authenticate.authenticateCustomer, (req, res, next) => {
+customerRouter.post('/login', authenticate.authenticateCustomer, ( req, res ) => {
   customerModel.findOne({ username: req.body.username }, function (err, customer) {
     if (err) {
       res.setHeader('Content-Type', 'application/json');
       res.json({ success: false, message: 'Unable to login, please provide credentials again'});
     }
-    else if (!customer || customer.password !== req.body.password ) {
-      res.setHeader('Content-Type', 'application/json');
-      res.json({ success: false, message: 'wrong username or password'});
-    }
     else if (customer.isVerified == false ){
-      res.statusCode = 400;
       res.setHeader('Content-Type', 'application/json');
       res.json({ success: false, message: 'your account is not verified'});
     }
@@ -68,7 +63,7 @@ customerRouter.post('/login', authenticate.authenticateCustomer, (req, res, next
       res.json({ success: true, token: token, message: 'Successfully Logged in..!!!'});
 
     }
-  });
+  }).select("_id isVerified").lean();
 });
 
 // logout customer and destroy the session
@@ -209,17 +204,20 @@ customerRouter.post('/pushNotificationToken', async (req, res, next) => {
 
 });
 
-customerRouter.put('/updatepassword', ( req, res ) => {
+customerRouter.put('/updatepassword', async ( req, res ) => {
   const payload = req.body;
-  customerModel.findOneAndUpdate({ username: payload.phone }, { $set:  {password  : payload.password }}, (error, user ) => {
+  customerModel.findOne({ username: payload.phone }, (error, user ) => {
     if ( user ){
+      // set function provided by passport-local-mongoose plugin
+      let data = user.setPassword( payload.password );
+      user.save();
       res.json({ success : true, message : 'password updated', customer_id : user._id });
     } else if( error ){
       res.json({ success : false, message : 'unable to update password', error: error });
     }else {
       res.json({ success : false, message : 'unable to update password' });
     }
-  }).select('_id');
+  });
 });
 
 module.exports = customerRouter;

@@ -2,6 +2,7 @@ var express     = require('express');
 var passport    = require('passport');
 var bodyParser  = require('body-parser');
 var ObjectId    = require('mongoose').Types.ObjectId;
+var moment      = require('moment');
 
 // custom modules
 var agreementsModel     = require('../models/agreements');
@@ -9,7 +10,7 @@ var customers_Location  = require('../socket_controllers/customer_location').pop
 var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
 var providersWithRequests = require('../models/providersWithRequests');
 
-var sendSMS           = require('../utils/sendSMS');
+var sendSMS = require('../utils/sendSMS');
 var { provider_arrived_message } = require('../utils/message_store');
 // agreements route settings
 var agreementsRouter = express.Router();
@@ -55,7 +56,8 @@ agreementsRouter.post('/initiate', async (request, response) => {
   // checking if agreenent is assigned to a provider else the request will be sent
   // to next provider
   let contract_status = '';
-  for ( let loop = 0; loop <= providers_list.length; loop ++) {
+  for ( var loop = 0; loop <= providers_list.length; loop ++) {
+    (function (loop) {
       setTimeout( async () => {
         if( contract_status !== '' ) {
           if( contract_status == 'accepted') { 
@@ -64,7 +66,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
             response.json({ success: false, message: 'no providers are available at this time'});
           }
         } else {
-          let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)});
+          let agreement = await agreementsModel.findById({ _id: ObjectId(contract_id)}).select('status').lean();
           console.log('status of agreement', agreement.status);
           if ( loop == providers_list.length ) {
                 if( agreement.status == 'accepted') {
@@ -75,7 +77,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
                 }
               } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
                 console.log(loop, 'on server');
-                let checkRequest = await providersWithRequests.find({ providerId: providers_list[loop].providerId});
+                let checkRequest = await providersWithRequests.find({ providerId: providers_list[loop].providerId}).lean();
                 if( !checkRequest ){
                   io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object});
                 }
@@ -83,7 +85,8 @@ agreementsRouter.post('/initiate', async (request, response) => {
                   contract_status = agreement.status;  
               }
         }
-      }, 11000);
+      }, loop * 10000);
+    })(loop);
     }
 
 });
@@ -122,14 +125,14 @@ agreementsRouter.get('/:id', (req, res, next) => {
       } else {
           res.json({ success: true, message: 'ok', data:agreements});
       }
-    });
+    }).lean();
   });
 
 
   // route to confirm the agreement between provider and customer
   agreementsRouter.post('/confirmAgreement', async ( req, res ) => {
       let payload   = req.body;
-      let agreement = await agreementsModel.findById({_id: payload.agreement_id}).select('customer_id -_id');
+      let agreement = await agreementsModel.findById({_id: payload.agreement_id}).select('customer_id -_id').lean();
       if(agreement.status == 'accepted' ){
         res.json({ success: false, message: 'agreement already awarded to another provider'});
       } else {
@@ -154,7 +157,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
     response_data.agreement_data  = {};
     try {
       let customer_data   = await customers_Location ( payload.customer_id);
-      let agreement_data  = await agreementsModel.findById({ _id: ObjectId(payload.agreement_id)});
+      let agreement_data  = await agreementsModel.findById({ _id: ObjectId(payload.agreement_id)}).lean();
       
       response_data.agreement_data  = agreement_data;
 
@@ -188,8 +191,25 @@ agreementsRouter.get('/:id', (req, res, next) => {
     });
   });
 
-  agreementsRouter.post('/trackAgreementTime', (req, res) => {
-    console.log('track agreement time', req.body);
+  agreementsRouter.post('/trackAgreementTime', async (req, res) => {
+    let payload = req.body,
+        query   = { _id: payload.agreement_id },
+        update  = { $push: { time: payload.timetrack }},
+        options = { upsert: false, new: true};
+    
+        try {      
+          let agreement = await agreementsModel.findOne(query).lean().select('time');
+          if( agreement ){
+            let returned_time = await agreementsModel.findOneAndUpdate( query, update, options ).select('time').lean();
+            if ( returned_time ){
+              res.json({ success: true, message: 'saved the time successfully'});
+            }
+          } else {
+            res.json({ success: false, message: 'unable to find agreement with the provided id'})
+          }
+        } catch (error) {
+            res.json({ success: false, message: 'unable to save provided time', error : error})
+        }
   });
 
   

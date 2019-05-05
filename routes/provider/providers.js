@@ -226,7 +226,7 @@ providersRouter.post('/checkPhone', async ( req, res ) => {
   })
 });
 
-providersRouter.put('/updatePassword', ( req, res, next ) => {
+providersRouter.put('/updatePassword', ( req, res ) => {
     const payload = req.body;
 
     providersModel.findOne({ username: payload.phone }, async (error, user ) => {

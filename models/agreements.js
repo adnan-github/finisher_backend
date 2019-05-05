@@ -2,17 +2,12 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const timeTrackSchema = new Schema({
-    start_time: {
-        type: String
-    },
-    end_time: {
-        type: String
-    },
-    hours: {
-        type: String
-    } 
-}); 
+const timeTrackingSchema = new Schema({
+        start_time: String,
+        end_time: String,
+        total_hours: Schema.Types.Number,
+        date: Date
+}, {_id: false});
 
 const agreementsSchema = new Schema({
     customer_id: {
@@ -42,10 +37,10 @@ const agreementsSchema = new Schema({
     agreement_rate: {
         type: String
     },
-    time: [timeTrackSchema]
+    time: [timeTrackingSchema]
 }, {        
     timestamps: true
-    });
+}).index({ customer_id: 1, provider_Id: 1 });
 
 const agreementsModel = mongoose.model('agreements', agreementsSchema);
 

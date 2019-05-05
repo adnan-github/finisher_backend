@@ -14,7 +14,7 @@ feedbackRouter.post('/feedbackByCustomer', async ( req, res ) => {
         let query   = { agreement_id: payload.agreement_id },
             update  = { $set: {  rating_to_provider: payload.rating_to_provider, feedback_by_customer: payload.feedback_by_customer || '' }};
         try {    
-            let feedbackObject = await feedbackModel.findOneAndUpdate(query, update).select('_id');
+            let feedbackObject = await feedbackModel.findOneAndUpdate(query, update).select('_id').lean();
             console.log(feedbackObject);
             if( feedbackObject ) { 
                 res.json({ success: true, message: 'feedback by the customer successfully saved'});
@@ -39,7 +39,7 @@ feedbackRouter.post('/feedbackByProvider', async ( req, res ) => {
         try {    
             let checkFeedback = await feedbackModel.findOne({agreement_id: payload.agreement_id}).select('_id').lean();
             if ( !checkFeedback ) {
-                let feedbackObject = await feedbackModel.findOneAndUpdate(query, update, options).select('_id');
+                let feedbackObject = await feedbackModel.findOneAndUpdate(query, update, options).select('_id').lean();
                 if( feedbackObject ) { 
                     res.json({ success: true, message: 'feedback by the customer successfully saved'});
                 } else { 

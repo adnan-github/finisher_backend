@@ -12,9 +12,10 @@ feedbackRouter.post('/feedbackByCustomer', async ( req, res ) => {
     let payload = req.body;
     if( payload.agreement_id && payload.rating_to_provider ){
         let query   = { agreement_id: payload.agreement_id },
-            update  = { $set: {  rating_to_provider: payload.rating_to_provider, feedback_by_customer: payload.feedback_by_customer || '' }};
+            update  = { $set: {  rating_to_provider: payload.rating_to_provider, feedback_by_customer: payload.feedback_by_customer || '' }},
+            options = { upsert: true, new: true};
         try {    
-            let feedbackObject = await feedbackModel.findOneAndUpdate(query, update).select('_id').lean();
+            let feedbackObject = await feedbackModel.findOneAndUpdate(query, update, options).select('_id').lean();
             console.log(feedbackObject);
             if( feedbackObject ) { 
                 res.json({ success: true, message: 'feedback by the customer successfully saved'});

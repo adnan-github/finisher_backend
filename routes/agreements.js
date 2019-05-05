@@ -200,6 +200,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
         try {      
           let agreement = await agreementsModel.findOne(query).lean().select('time');
           if( agreement ){
+            console.log(agreement, 'checking');
             let returned_time = await agreementsModel.findOneAndUpdate( query, update, options ).select('time').lean();
             if ( returned_time ){
               res.json({ success: true, message: 'saved the time successfully'});

@@ -10,9 +10,9 @@ feedbackRouter.use(bodyParser.json());
 
 feedbackRouter.post('/feedbackByCustomer', async ( req, res ) => {
     let payload = req.body;
-    if( payload.agreement_id && payload.rating ){
+    if( payload.agreement_id && payload.rating_to_provider ){
         let query   = { agreement_id: payload.agreement_id },
-            update  = { $set: {  rating_to_provider: payload.rating, feedback_by_customer: payload.feedback || '' }};
+            update  = { $set: {  rating_to_provider: payload.rating_to_provider, feedback_by_customer: payload.feedback_by_customer || '' }};
         try {    
             let feedbackObject = await feedbackModel.findOneAndUpdate(query, update).select('_id');
             console.log(feedbackObject);
@@ -32,9 +32,9 @@ feedbackRouter.post('/feedbackByCustomer', async ( req, res ) => {
 
 feedbackRouter.post('/feedbackByProvider', async ( req, res ) => {
     let payload = req.body;
-    if( payload.agreement_id && payload.rating ){
+    if( payload.agreement_id && payload.rating_to_customer ){
         let query   = { agreement_id: payload.agreement_id },
-            update  = { $set: {  rating_to_customer: payload.rating, feedback_by_provider: payload.feedback || '' }},
+            update  = { $set: {  rating_to_customer: payload.rating_to_customer, feedback_by_provider: payload.feedback_by_provider || '' }},
             options = { upsert: true, new: true };
         try {    
             let checkFeedback = await feedbackModel.findOne({agreement_id: payload.agreement_id}).select('_id').lean();

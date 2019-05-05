@@ -159,15 +159,11 @@ console.log('provider signup request==>', req.body)
 });
 
 
-providersRouter.post('/login', authenticate.authenticatProvider, (req, res, next) => {
+providersRouter.post('/login', authenticate.authenticatProvider, (req, res) => {
     providersModel.findOne({ username: req.body.username }, function (err, provider) {
         if (err) {
           res.setHeader('Content-Type', 'application/json');
           res.json({ success: false, message: 'Unable to login'});
-        }
-        else if (!provider || provider.password !== req.body.password ) {
-          res.setHeader('Content-Type', 'application/json');
-          res.json({ success: false, message: 'wrong username or password'});
         }
         else if (provider.isVerified == false ){
           res.setHeader('Content-Type', 'application/json');
@@ -230,17 +226,21 @@ providersRouter.post('/checkPhone', async ( req, res ) => {
   })
 });
 
-providersRouter.put('/updatepassword', ( req, res, next ) => {
+providersRouter.put('/updatePassword', ( req, res, next ) => {
     const payload = req.body;
-    providersModel.findOneAndUpdate({ username: payload.phone }, { $set: {password  : payload.password }}, (error, user ) => {
-      if ( user._id ){
+
+    providersModel.findOne({ username: payload.phone }, async (error, user ) => {
+      console.log(user, payload, 'user');
+      if ( user ){
+        let data = await user.setPassword(payload.password);
+        user.save();
         res.json({ success : true, message : 'password updated', provider_id : user._id });
       } else if( error ){
         res.json({ success : false, message : 'unable to update password', error: error });
       } else {
         res.json({ success : false, message : 'unable to update password' });
       }
-    }).select('_id');
+    });
 });
 
 
@@ -305,8 +305,8 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
 
   if ( expo_sdk.Expo.isExpoPushToken( req.body.push_token ) ){
     let query     = { username: req.body.phone },
-      update    = { push_token: req.body.push_token },
-      options   = { upsert: true, new: true };
+      update      = { push_token: req.body.push_token },
+      options     = { upsert: true, new: true };
 
     let provider  = await providersModel.findOneAndUpdate( query, update, options ).select('-_id username push_token');
     if ( provider.push_token ){
@@ -323,7 +323,7 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
 
 providersRouter.get("/providerLocation/:id", function(req, res, next){
 	var io = req.app.io;
-    providersLocationModel.findById({ _id: ObjectId(req.params.id)},function(err, location){
+    providersLocationModel.findById({ providerId: ObjectId(req.params.id)},function(err, location){
         if (err){
             res.json({ success: false, message: 'unable to get providers location', error: err});
         }

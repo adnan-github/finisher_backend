@@ -320,14 +320,18 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
 
 //Get Single provider and emit track by customer to provider
 
-providersRouter.get("/providerLocation/:id", function(req, res, next){
+providersRouter.get("/providerLocation/:id", function(req, res){
   var io = req.app.io;
   console.log(req.params);
-    providersLocationModel.findById({ providerId: ObjectId(req.params.id)},function(err, location){
+    providersLocationModel.findOne({ providerId: (req.params.id)},function(err, location){
         if (err){
             res.json({ success: false, message: 'unable to get providers location', error: err});
+            return;
+        } else if( !location ) {
+          res.json({ success: false, message: 'no location found for the provider'})  
+        } else {
+          res.json({ success: true, message: 'provider location got successfully', data: location})
         }
-        res.json({ success: true, message: 'provider location got successfully', data: location})
-    });
+    }).select("coordinate.coordinates -_id").lean();
 });
 module.exports = providersRouter;

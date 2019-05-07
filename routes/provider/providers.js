@@ -318,7 +318,6 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
   }
 });
 
-//Get Single provider and emit track by customer to provider
 
 providersRouter.get("/providerLocation/:id", function(req, res){
   var io = req.app.io;

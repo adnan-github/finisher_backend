@@ -35,6 +35,9 @@ const agreementsSchema = new Schema({
         type: String
     },
     agreement_rate: {
+        type: Number
+    },
+    promo_code: {
         type: String
     },
     time: [timeTrackingSchema]

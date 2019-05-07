@@ -49,8 +49,8 @@ promocodesRouter.delete('/deletepromoCode', (req, res) => {
     });
 });
 
-promocodesRouter.get('/getPromoCode', ( req, res ) => {
-    promoModel.findOne({ code: req.body.code }, ( error, promoCode ) => {
+promocodesRouter.get('/getPromoCode/:code', ( req, res ) => {
+    promoModel.findOne({ code: req.params.code }, ( error, promoCode ) => {
         if ( error ) {
             res.json({ success: false, message: 'error in finding promo code', error: error});
         } else if ( promoCode ) {

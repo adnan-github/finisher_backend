@@ -5,10 +5,12 @@ var ObjectId    = require('mongoose').Types.ObjectId;
 var moment      = require('moment');
 
 // custom modules
-var agreementsModel     = require('../models/agreements');
-var customers_Location  = require('../socket_controllers/customer_location').populateCustomersRecord;
-var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
+var promoModel        = require('../models/promoCodes'); 
+var promoCode         = new promoModel();
+var agreementsModel   = require('../models/agreements');  
 var providersWithRequests = require('../models/providersWithRequests');
+var customers_Location    = require('../socket_controllers/customer_location').populateCustomersRecord;
+var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
 
 var sendSMS = require('../utils/sendSMS');
 var { provider_arrived_message } = require('../utils/message_store');
@@ -23,7 +25,6 @@ agreementsRouter.post('/initiate', async (request, response) => {
     let customer_location_data = {};
     customer_location_data.geometry = {};
     let created_agreement = {};
-  
   let customer_details = await customers_Location(request.body.customer_id);
   let customer_object = {
     name            : customer_details.customerId.name,
@@ -38,8 +39,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
       customer_id       : request.body.customer_id,
       selected_service  : request.body.selected_service,
       status            : 'pending',
-      agreement_type    : request.body.agreement_type,
-      agreement_rate    : request.body.agreement_rate
+      agreement_type    : request.body.agreement_type
     }));
   } catch (error) {
     response.json({ success: false, message: 'unable to initiate agreement', error: error});
@@ -181,8 +181,10 @@ agreementsRouter.get('/:id', (req, res, next) => {
     let payload = req.body;
     agreementsModel.findByIdAndUpdate({_id: ObjectId(payload.agreement_id)}, { $set : {
       status: 'started',
-      agreement_rate: payload.agreement_rate
-    }}, ( err, agreement) => {
+      agreement_rate: payload.agreement_rate,
+      promo_code: payload.promo_code ? payload.promo_code : null
+    }}, { new: true}, ( err, agreement) => {
+      console.log(agreement);
       if( agreement.status == 'started' && agreement.agreement_rate ){
         res.json({ success: true, message: 'successfully started the agreement', data: agreement})
       } else {
@@ -212,6 +214,38 @@ agreementsRouter.get('/:id', (req, res, next) => {
         }
   });
 
-  
+  agreementsRouter.post('/completeAgreement', async ( req, res ) => {
+    let payload   = req.body,
+        query     = { _id: payload.agreement_id },
+        total_hours = 0, total_amount = 0,
+        agreement = await agreementsModel.findOne(query).lean().select('_id time selected_service agreement_type agreement_rate promo_code');
+        agreementsModel.findByIdAndUpdate(query, { $set: { status: 'completed'}});
+    if ( agreement ) {
+      if(agreement.agreement_type == 'hourly') {
+        let total_agreement_time = agreement.time;
+        await total_agreement_time.forEach(element => {
+          if(element != null)
+          total_hours += Number(element.total_hours)
+        });
+        total_hours = total_hours.toFixed(1);
+        total_amount = Number(agreement.agreement_rate) * total_hours;
+        console.log(agreement)
+        if ( agreement.promo_code ) {
+         total_amount = await promoCode.returnFinalPrice( agreement.promo_code, total_amount );
+        }
+        console.log(total_amount);
+        res.json({ success: true, message: 'successfully got the final price', data: total_amount});
+      } else {
+        total_amount = Number(agreement.agreement_rate);
+        if ( agreement.promo_code ) {
+          promoCode = new promoModel();
+           total_amount = await promoCode.returnFinalPrice( agreement.promo_code, total_amount );
+        }
+        res.json({ success: true, message: 'successfully got the final price', data: total_amount})
+      }
+    } else {
+      res.json({ success: false, message: 'no agreement found with the provided id'});
+    }
+  });
 
 module.exports = agreementsRouter;

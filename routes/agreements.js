@@ -238,7 +238,6 @@ agreementsRouter.get('/:id', (req, res, next) => {
       } else {
         total_amount = Number(agreement.agreement_rate);
         if ( agreement.promo_code ) {
-          promoCode = new promoModel();
            total_amount = await promoCode.returnFinalPrice( agreement.promo_code, total_amount );
         }
         res.json({ success: true, message: 'successfully got the final price', data: total_amount})

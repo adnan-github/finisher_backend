@@ -62,7 +62,7 @@ promocodesRouter.get('/getPromoCode/:code', ( req, res ) => {
         } else {
             res.json({ success: false, message: 'inavalid promo code entered'})
         }
-    }).select('-_id name code discount_type discount_amount max_discount');
+    }).select('-_id name code discount_type discount_amount max_discount').lean();
 });
 
 promocodesRouter.get('/getByDate', ( req, res ) => {
@@ -80,7 +80,7 @@ promocodesRouter.get('/getByDate', ( req, res ) => {
         } else {
             res.json({ success: true, message: 'successfully recieved the codes', data: promoCodes});
         }
-    }).limit(10).select('name discount_type discount_amount start_date expiration_date code');
+    }).limit(10).select('name discount_type discount_amount start_date expiration_date code').lean();
 });
 
 promocodesRouter.get('/getByRange', ( req, res ) => {
@@ -94,7 +94,7 @@ promocodesRouter.get('/getByRange', ( req, res ) => {
         } else {
             res.json ( { success: true, message: 'successfully retrieved the data', data: promoCodes})
         }
-    }).limit(10).select('name discount_type discount_amount start_date expiration_date code');
+    }).limit(10).select('name discount_type discount_amount start_date expiration_date code').lean();
 })
 
 module.exports = promocodesRouter;

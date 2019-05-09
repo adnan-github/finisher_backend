@@ -71,7 +71,7 @@ adminsRouter.post('/signup', (req, res, next) => {
         return;
       }
       res.json({admin: admin , message: "admin info"});
-    });
+    }).lean();
   });
 
   adminsRouter.get('/requestList', (req, res, next) => {

@@ -96,7 +96,7 @@ customerRouter.get('/info', (req, res, next) => {
       return;
     }
     res.json({customer: customer , message: "customer info"});
-  });
+  }).lean();
 });
 
 customerRouter.get('/all', (req, res) => {

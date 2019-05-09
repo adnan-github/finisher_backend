@@ -7,6 +7,7 @@ var moment      = require('moment');
 // custom modules
 var promoModel        = require('../models/promoCodes'); 
 var promoCode         = new promoModel();
+var customer          = require('../models/customers');
 var agreementsModel   = require('../models/agreements');  
 var providersWithRequests = require('../models/providersWithRequests');
 var customers_Location    = require('../socket_controllers/customer_location').populateCustomersRecord;
@@ -17,6 +18,11 @@ var { provider_arrived_message } = require('../utils/message_store');
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
+
+let expo_sdk = require('expo-server-sdk').Expo;
+
+let expo = new expo_sdk();
+let messages = [];
 
 
 // agreements route for new service
@@ -60,7 +66,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
     (function (loop) {
       setTimeout( async () => {
         if( contract_status !== '' ) {
-          if( contract_status == 'accepted') { 
+          if( contract_status == 'accepted') {
             response.json({ success: true, message: 'provider accepted your request'});
           } else {
             response.json({ success: false, message: 'no providers are available at this time'});
@@ -140,6 +146,20 @@ agreementsRouter.get('/:id', (req, res, next) => {
           $set : { provider_Id: payload.provider_Id, status: 'accepted' }
         });
         let customer_detail = await customers_Location( updated_agreement.customer_id );
+        let data = await customer.findById({ _id: updated_agreement.customer_id}).select("push_token").lean();
+        messages.push({
+          to    : data.push_token,
+          title : 'Request Accepted',
+          sound : 'default',
+          body  : 'Your provider is on his way',
+          data  : { action: {
+            type: 'AGREEMENT_ACCEPTED',
+            payload: req.body
+          }}
+        });
+        let message = await expo.sendPushNotificationsAsync(messages);
+        messages.pop();
+        console.log(message, data, 'saad');
         io.sockets.to(customer_detail.socketId).emit('action', {
           type    : 'AGREEMENT_ACCEPTED',
           payload : req.body
@@ -160,8 +180,20 @@ agreementsRouter.get('/:id', (req, res, next) => {
       let agreement_data  = await agreementsModel.findById({ _id: ObjectId(payload.agreement_id)}).lean();
       
       response_data.agreement_data  = agreement_data;
-
-      if( customer_data ) { 
+      let data = await customer.findById({ _id: payload.customer_id}).select("push_token").lean();
+      if( customer_data ) {
+        messages.push({
+          to    : data.push_token,
+          title : 'provider arrived',
+          sound : 'default',
+          body  : 'your provider has arrived at your location',
+          data  : { action: {
+            type: 'PROVIDER_ARRIVED',
+            payload: response_data
+          }}
+        });
+        let message = await expo.sendPushNotificationsAsync(messages);
+        messages.pop();
         io.sockets.to(customer_data.socketId).emit('action', {
           type    : 'PROVIDER_ARRIVED', 
           payload : response_data

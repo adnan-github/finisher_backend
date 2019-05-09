@@ -36,7 +36,7 @@ servicesRouter.delete('/deleteService', (req, res, next) => {
     } else {
         res.json({ success: true, message: 'deleted successfully'});
     }
-  });
+  }).lean();
 });
 
 
@@ -51,7 +51,7 @@ servicesRouter.get('/all', (req, res, next) => {
     } else {
         res.json({ success: true, message: 'ok', data:services});
     }
-  }).select('name perHour');
+  }).select('name perHour').lean();
 });
 
 // services route for find one service
@@ -66,7 +66,7 @@ servicesRouter.get('/adminService', (req, res, next) => {
       res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, message: 'got the rates', service: service});
     }
-  }).select('name perHour _id');
+  }).select('name perHour _id').lean();
 });
 
 servicesRouter.get('/service', (req, res, next) => {
@@ -80,7 +80,7 @@ servicesRouter.get('/service', (req, res, next) => {
       res.setHeader('Content-Type', 'application/json');
         res.json({ success: true, message: 'got the rates', service: { service_name: service.name, service_rate: service.perHour}});
     }
-  }).select('name perHour -_id');
+  }).select('name perHour -_id').lean();
 });
 
 servicesRouter.put('/updateService', ( req, res ) => {
@@ -92,7 +92,7 @@ servicesRouter.put('/updateService', ( req, res ) => {
       res.statusCode = 200;
       res.json({ success: true, message: 'updated service successfully', data: service })
     }
-  }).select('name -_id perHour');
+  }).select('name -_id perHour').lean();
 });
 
 module.exports = servicesRouter;

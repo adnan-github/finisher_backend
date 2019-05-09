@@ -194,7 +194,7 @@ providersRouter.get('/info', (req, res, next) => {
         res.json({provider: provider , message: "provider info"});
       }
       
-    });
+    }).lean();
 });
 
 

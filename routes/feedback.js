@@ -33,6 +33,7 @@ feedbackRouter.post('/feedbackByCustomer', async ( req, res ) => {
 
 feedbackRouter.post('/feedbackByProvider', async ( req, res ) => {
     let payload = req.body;
+    console.log(payload);
     if( payload.agreement_id && payload.rating_to_customer ){
         let query   = { agreement_id: payload.agreement_id },
             update  = { $set: {  rating_to_customer: payload.rating_to_customer, feedback_by_provider: payload.feedback_by_provider || '' }},
@@ -40,16 +41,21 @@ feedbackRouter.post('/feedbackByProvider', async ( req, res ) => {
         try {    
             let checkFeedback = await feedbackModel.findOne({agreement_id: payload.agreement_id}).select('_id').lean();
             if ( !checkFeedback ) {
+                console.log('here');
                 let feedbackObject = await feedbackModel.findOneAndUpdate(query, update, options).select('_id').lean();
-                if( feedbackObject ) { 
+                if( feedbackObject ) {
+                    console.log('here', feedbackObject); 
                     res.json({ success: true, message: 'feedback by the customer successfully saved'});
                 } else { 
+                    console.log('here no');
                     res.json({ success: false, message: 'unable to find document with provided agreement id'});
                 }
             } else {
+                console.log(checkFeedback, 'here');
                 res.json({ success: false, message: 'feedback already provided by the provider'});
             }
         } catch ( error ) {
+
             res.json({ success: false, message: 'error in saving the feedback', error: error});
         }
     } else {

@@ -1,36 +1,46 @@
+// imported libraries
 var express     = require('express');
 var passport    = require('passport');
 var bodyParser  = require('body-parser');
+let expo_sdk    = require('expo-server-sdk').Expo;
 var ObjectId    = require('mongoose').Types.ObjectId;
-var moment      = require('moment');
 
-// custom modules
-var promoModel        = require('../models/promoCodes'); 
-var promoCode         = new promoModel();
-var customer          = require('../models/customers');
-var agreementsModel   = require('../models/agreements');  
+// imported models 
+var promoModel            = require('../models/promoCodes'); 
+var customerModel         = require('../models/customers');
+var agreementsModel       = require('../models/agreements');  
+var completedAgreements   = require('../models/completedAgreements');
 var providersWithRequests = require('../models/providersWithRequests');
-var customers_Location    = require('../socket_controllers/customer_location').populateCustomersRecord;
-var nearby_providers_Location  = require('../socket_controllers/provider_location').returnNearbyProviders;
 
-var sendSMS = require('../utils/sendSMS');
+// customer modules
+var sendSMS                     = require('../utils/sendSMS');
+var customers_Location          = require('../socket_controllers/customer_location').populateCustomersRecord;
+var nearby_providers_Location   = require('../socket_controllers/provider_location').returnNearbyProviders;
 var { provider_arrived_message } = require('../utils/message_store');
+
+
 // agreements route settings
 var agreementsRouter = express.Router();
 agreementsRouter.use(bodyParser.json());
 
-let expo_sdk = require('expo-server-sdk').Expo;
 
-let expo = new expo_sdk();
-let messages = [];
+let expo        = new expo_sdk();
+var promoCode   = new promoModel();
+let messages    = [];
 
 
 // agreements route for new service
 agreementsRouter.post('/initiate', async (request, response) => {
-    let contract_id = '';
-    let customer_location_data = {};
+
+  // variables declaration for initiating contract
+    let contract_id = '',
+        created_agreement = {},
+        customer_location_data = {};
+  
+  // data storage for customer location geometry
     customer_location_data.geometry = {};
-    let created_agreement = {};
+
+  // customer details that is requesting the agreement  
   let customer_details = await customers_Location(request.body.customer_id);
   let customer_object = {
     name            : customer_details.customerId.name,
@@ -40,6 +50,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
     category        : request.body.selected_service
 };
 
+  // initiating the agreement by creating a document in agreements collection
   try {
      created_agreement = await agreementsModel.create(new agreementsModel({
       customer_id       : request.body.customer_id,
@@ -52,12 +63,14 @@ agreementsRouter.post('/initiate', async (request, response) => {
   }
 
   contract_id = created_agreement._id;
+
+  customer_object.agreement_id          = created_agreement._id;
   customer_location_data.geometry.lat   = customer_details.coordinate.coordinates[1]; 
   customer_location_data.geometry.lng   = customer_details.coordinate.coordinates[0];
 
+  // getting nearby providers according to customer location
   let providers_list = await nearby_providers_Location(customer_location_data);
-  console.log('this is newly sent providers list', providers_list);
-  customer_object.agreement_id = created_agreement._id;
+
   io.sockets.to(providers_list[0].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object });
   // checking if agreenent is assigned to a provider else the request will be sent
   // to next provider
@@ -146,7 +159,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
           $set : { provider_Id: payload.provider_Id, status: 'accepted' }
         });
         let customer_detail = await customers_Location( updated_agreement.customer_id );
-        let data = await customer.findById({ _id: updated_agreement.customer_id}).select("push_token").lean();
+        let data = await customerModel.findById({ _id: updated_agreement.customer_id}).select("push_token").lean();
         messages.push({
           to    : data.push_token,
           title : 'Request Accepted',
@@ -180,7 +193,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
       let agreement_data  = await agreementsModel.findById({ _id: ObjectId(payload.agreement_id)}).lean();
       
       response_data.agreement_data  = agreement_data;
-      let data = await customer.findById({ _id: payload.customer_id}).select("push_token").lean();
+      let data = await customerModel.findById({ _id: payload.customer_id}).select("push_token").lean();
       if( customer_data ) {
         messages.push({
           to    : data.push_token,
@@ -211,6 +224,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
 
   agreementsRouter.post('/startAgreement', (req, res) => {
     let payload = req.body;
+    console.log(req.body);
     agreementsModel.findByIdAndUpdate({_id: ObjectId(payload.agreement_id)}, { $set : {
       status: 'started',
       agreement_rate: payload.agreement_rate,
@@ -247,6 +261,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
   });
 
   agreementsRouter.post('/completeAgreement', async ( req, res ) => {
+    console.log(req.body, 'erwe');
     let payload   = req.body,
         query     = { _id: payload.agreement_id },
         total_hours = 0, total_amount = 0,
@@ -259,23 +274,56 @@ agreementsRouter.get('/:id', (req, res, next) => {
           if(element != null)
           total_hours += Number(element.total_hours)
         });
-        total_hours = total_hours.toFixed(1);
+        total_hours = total_hours.toFixed(4);
         total_amount = Number(agreement.agreement_rate) * total_hours;
         console.log(agreement)
         if ( agreement.promo_code ) {
          total_amount = await promoCode.returnFinalPrice( agreement.promo_code, total_amount );
         }
         console.log(total_amount);
-        res.json({ success: true, message: 'successfully got the final price', data: total_amount});
+        res.json({ success: true, message: 'successfully got the final price', data: total_amount.toFixed(1)});
       } else {
         total_amount = Number(agreement.agreement_rate);
         if ( agreement.promo_code ) {
            total_amount = await promoCode.returnFinalPrice( agreement.promo_code, total_amount );
         }
-        res.json({ success: true, message: 'successfully got the final price', data: total_amount})
+        res.json({ success: true, message: 'successfully got the final price', data: total_amount.toFixed(1)})
       }
     } else {
       res.json({ success: false, message: 'no agreement found with the provided id'});
+    }
+  });
+
+  agreementsRouter.post('/paymentRecieved', async ( req, res ) => {
+    let payload = req.body;
+    console.log(payload);
+    if( !isNaN( payload.payed_amount )) {
+      try {
+        let new_agreement = await completedAgreements.create(new completedAgreements({
+          agreement_id: payload.agreement_id,
+          company_share: '15%',
+          payed_amount: payload.payed_amount
+        }));
+        if( new_agreement ) {
+          let customer_data = await customerModel.findOne({ _id: payload.customer_id}).lean();
+          messages.push({
+            to    : customer_data.push_token,
+            title : 'Payment Recieved',
+            sound : 'default',
+            body  : 'Thank you for paying Rs ' + payload.payed_amount + ' /-',
+          });
+          let message = await expo.sendPushNotificationsAsync(messages);
+          messages.pop();
+          res.json({ success: true, message: 'successfully updated the contract'});
+        }
+      } catch (error) {
+        console.log( ' hi here it is', error )
+       res.json({ success: false, message: 'unable to update payment', error: error}); 
+      }
+    } else {
+      console.log( ' hi here it is')
+      res.json({ success: false, message: 'please enter a number'});
+      return;
     }
   });
 

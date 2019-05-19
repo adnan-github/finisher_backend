@@ -53,7 +53,7 @@ adminsRouter.post('/signup', (req, res, next) => {
           res.json({ success: true, token:token, status: 'Successfully Logged in..!!!'});
         }
         return next;
-      });
+      }).lean();
   });
 
   adminsRouter.get('/info', (req, res, next) => {

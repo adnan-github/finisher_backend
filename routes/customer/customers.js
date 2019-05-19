@@ -132,7 +132,6 @@ customerRouter.post('/verifyPhone', async (req, res) => {
         } catch (error) {
           res.json({ success: false, message: 'error in updating database', error: error });    
         }
-        
       }
 });
 
@@ -206,12 +205,12 @@ customerRouter.post('/pushNotificationToken', async (req, res, next) => {
 
 customerRouter.put('/updatepassword', async ( req, res ) => {
   const payload = req.body;
-  customerModel.findOne({ username: payload.phone }, (error, user ) => {
+  customerModel.findOne({ username: payload.phone }, async (error, user ) => {
     if ( user ){
       // set function provided by passport-local-mongoose plugin
-      let data = user.setPassword( payload.password );
+      let data = await user.setPassword( payload.password );
       user.save();
-      res.json({ success : true, message : 'password updated', customer_id : user._id });
+      res.json({ success : true, message : 'password updated', data : user._id });
     } else if( error ){
       res.json({ success : false, message : 'unable to update password', error: error });
     }else {

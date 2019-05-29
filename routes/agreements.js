@@ -177,7 +177,6 @@ agreementsRouter.get('/:id', (req, res, next) => {
           type    : 'AGREEMENT_ACCEPTED',
           payload : req.body
         });
-        console.log('----> hy this is customer', customer_detail)
         res.json({ success: true, message: 'successfully confirmed the agreement', data: customer_detail});
       }
   });

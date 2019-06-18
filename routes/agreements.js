@@ -7,6 +7,7 @@ var ObjectId    = require('mongoose').Types.ObjectId;
 
 // imported models 
 var promoModel            = require('../models/promoCodes'); 
+var earningsModel         = require('../models/earnings');
 var customerModel         = require('../models/customers');
 var agreementsModel       = require('../models/agreements');  
 var completedAgreements   = require('../models/completedAgreements');
@@ -293,15 +294,18 @@ agreementsRouter.get('/:id', (req, res, next) => {
     }
   });
 
-  agreementsRouter.post('/paymentRecieved', async ( req, res ) => {
+  agreementsRouter.post('/paymentRecieved',  async ( req, res ) => {
     let payload = req.body;
     console.log(payload);
     if( !isNaN( payload.payed_amount )) {
       try {
-        let new_agreement = await completedAgreements.create(new completedAgreements({
-          agreement_id: payload.agreement_id,
-          company_share: '15%',
-          payed_amount: payload.payed_amount
+        let provider_share = Number(payload.payed_amount) * (0.85);
+        let new_agreement = await earningsModel.create(new earningsModel({
+          agreement_id      : payload.agreement_id,
+          company_share     : '15%',
+          payed_amount      : payload.payed_amount,
+          provider_id       : payload.provider_id,
+          provider_earning  :  Number(provider_share)
         }));
         if( new_agreement ) {
           let customer_data = await customerModel.findOne({ _id: payload.customer_id}).lean();
@@ -316,14 +320,21 @@ agreementsRouter.get('/:id', (req, res, next) => {
           res.json({ success: true, message: 'successfully updated the contract'});
         }
       } catch (error) {
-        console.log( ' hi here it is', error )
        res.json({ success: false, message: 'unable to update payment', error: error}); 
       }
     } else {
-      console.log( ' hi here it is')
       res.json({ success: false, message: 'please enter a number'});
       return;
     }
   });
+
+  agreementsRouter.get('/getEarnings', async ( req, res ) => {
+    let payload = req.body;
+    if( payload.provider_id ) {
+      agreementsModel.find({ provider_Id: payload.provider_id }).lean().select("_id");
+    } else { 
+      res.json({ success: false, message: 'no provider id was found'});
+    }
+  })
 
 module.exports = agreementsRouter;

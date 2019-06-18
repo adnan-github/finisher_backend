@@ -8,7 +8,7 @@ var contractsModel = require('../models/agreements');
 var contractsRouter = express.Router();
 contractsRouter.use(bodyParser.json());
 
-contractsRouter.get('/provider_id', async ( req, res ) => {
+contractsRouter.post('/provider_id', async ( req, res ) => {
     let payload = req.body;
     if( payload.provider_id ){
         let query   = { provider_Id: payload.provider_id };
@@ -29,7 +29,7 @@ contractsRouter.get('/provider_id', async ( req, res ) => {
     }
 });
 
-contractsRouter.get('/customer_id', async ( req, res ) => {
+contractsRouter.post('/customer_id', async ( req, res ) => {
     let payload = req.body;
     if( payload.customer_id ){
         let query   = { customer_id: payload.customer_id };

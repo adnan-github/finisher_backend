@@ -149,6 +149,24 @@ agreementsRouter.get('/:id', (req, res, next) => {
   });
 
 
+  agreementsRouter.post('/test_push', async ( req, res ) => {
+
+    messages.push({
+      to    : 'ExponentPushToken[oTeE6vCJz2k5Ns6yEXvHZp]',
+      title : 'Request Accepted',
+      sound : 'default',
+      body  : 'Your provider is on his way',
+      data  : { action: {
+        screen: 'map_screen',
+        type: 'AGREEMENT_ACCEPTED',
+        payload: 'there is no payload at the moment'
+      }}
+    });
+    let message = await expo.sendPushNotificationsAsync(messages);
+    messages.pop();
+    res.json({ success: true, message: 'successfully sent the notification'});
+  });
+
   // route to confirm the agreement between provider and customer
   agreementsRouter.post('/confirmAgreement', async ( req, res ) => {
       let payload   = req.body;

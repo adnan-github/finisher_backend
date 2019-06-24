@@ -156,11 +156,11 @@ agreementsRouter.get('/:id', (req, res, next) => {
       title : 'Request Accepted',
       sound : 'default',
       body  : 'Your provider is on his way',
-      data  : { action: {
+      data  : {  
         screen: 'map_screen',
         type: 'AGREEMENT_ACCEPTED',
         payload: 'there is no payload at the moment'
-      }}
+      }
     });
     let message = await expo.sendPushNotificationsAsync(messages);
     messages.pop();

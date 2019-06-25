@@ -47,8 +47,8 @@ contractsRouter.post('/customer_id', async ( req, res ) => {
             if( contractsObject ) { 
               await Object.keys(contractsObject).forEach( data => {
                   if ( contractsObject[data].status === 'completed') {
-                      
-                  } contract_ids.push(contractsObject[data]._id) : null;
+                    contract_ids.push(contractsObject[data]._id);  
+                  } 
                 });
                 if( contract_ids.length !== 0) { 
                     feedbackModel.find({'agreement_id': {$in: contract_ids}}).select('rating_to_provider');

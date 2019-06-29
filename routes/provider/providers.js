@@ -185,7 +185,7 @@ providersRouter.post('/cnicBack', cnic_back, (req, res) => {
         });
       });
 });
-
+// cnic
 providersRouter.post('/cnicUpload', cnic_upload, (req, res) => {
 
   var files_url     = [], 

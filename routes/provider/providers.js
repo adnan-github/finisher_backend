@@ -69,6 +69,21 @@ const profile_image = multer({
   maxCount: 1
 }]);
 
+const cnic_front = multer({
+  storage : multerStorage,
+  limits  : {fileSize: 5 * 1024 * 1024 },
+}).fields([{
+  name: 'cnic_front',
+  maxCount: 1
+}]);
+const cnic_back = multer({
+  storage : multerStorage,
+  limits  : {fileSize: 5 * 1024 * 1024 },
+}).fields([{
+  name: 'cnic_back',
+  maxCount: 1
+}]);
+
 providersRouter.post('/uploadProfileImage', profile_image, (req, res) => {
   var files_url     = [], 
       errors_array  = [];
@@ -89,6 +104,74 @@ providersRouter.post('/uploadProfileImage', profile_image, (req, res) => {
                 files_url.push(publicUrl);
                 if(file.metadata.name){
                   fs.unlink(path.join('./profile_images', file.metadata.name), err => {
+                    errors_array.push(err);
+                  });
+                  if(files_url.length == 1){
+                    res.statusCode = 200;
+                    res.json({ success : true, message : 'successfully uploaded profile image', profile_image_url : files_url[0] })
+                  }  
+                }
+              }
+            });
+          }
+        });
+      });
+});
+
+providersRouter.post('/cnicFront', cnic_front, (req, res) => {
+  var files_url     = [],
+      errors_array  = [];
+
+      fs.readdir('./cnic_images', (err, files) => {
+        if(err) {
+          res.json({ success: false, message: 'unable to upload cnic', error: err});
+          return;
+        }
+        files.forEach(( file, index ) => {
+          if(file.split('.')[1] == 'jpeg'){
+            const file_path = 'cnic_images/' + file;
+            my_bucket.upload(file_path, (err, file) => {
+              if(err){
+                res.json({ success : false, message : 'unable to upload images', error   : err });
+              } else {
+                let publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${file.metadata.name}`;
+                files_url.push(publicUrl);
+                if(file.metadata.name){
+                  fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
+                    errors_array.push(err);
+                  });
+                  if(files_url.length == 1){
+                    res.statusCode = 200;
+                    res.json({ success : true, message : 'successfully uploaded profile image', profile_image_url : files_url[0] })
+                  }  
+                }
+              }
+            });
+          }
+        });
+      });
+});
+
+providersRouter.post('/cnicBack', cnic_back, (req, res) => {
+  var files_url     = [],
+      errors_array  = [];
+
+      fs.readdir('./cnic_images', (err, files) => {
+        if(err) {
+          res.json({ success: false, message: 'unable to upload cnic', error: err});
+          return;
+        }
+        files.forEach(( file, index ) => {
+          if(file.split('.')[1] == 'jpeg'){
+            const file_path = 'cnic_images/' + file;
+            my_bucket.upload(file_path, (err, file) => {
+              if(err){
+                res.json({ success : false, message : 'unable to upload images', error   : err });
+              } else {
+                let publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${file.metadata.name}`;
+                files_url.push(publicUrl);
+                if(file.metadata.name){
+                  fs.unlink(path.join('./cnic_images', file.metadata.name), err => {
                     errors_array.push(err);
                   });
                   if(files_url.length == 1){

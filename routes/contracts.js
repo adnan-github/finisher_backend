@@ -60,12 +60,13 @@ contractsRouter.post('/customer_id', async ( req, res ) => {
                 },
                 {
                     $project: {
-                        "selected_service": 1, "status": 1, "agreement_type": 1, "createdAt": 1,
-                        "feedback.rating_to_provider": 1, "updatedAt": 1, "_id": 1, "amount.payed_amount": 1 
+                        "selected_service"  : 1,    "status"    : 1, 
+                        "agreement_type"    : 1,    "createdAt" : 1,
+                        "updatedAt"         : 1,    "_id"       : 1, 
+                        "feedback.rating_to_provider": 1,   "amount.payed_amount": 1 
                     }
                 }
             ]);
-            console.log(contracts_testObj);
             if( contracts_testObj ) { 
                 res.json({ success: true, message: 'got the agreements successfully', contracts: contracts_testObj});
             } else { 

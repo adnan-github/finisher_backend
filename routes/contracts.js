@@ -14,22 +14,40 @@ contractsRouter.use(bodyParser.json());
 
 contractsRouter.post('/provider_id', async ( req, res ) => {
     let payload = req.body;
-    let contracts_array = [];
     if( payload.provider_id ){
-        let query   = { provider_Id: payload.provider_id };
         try {    
-            let contractsObject = await contractsModel.find(query).lean().limit(10);
-            console.log(contractsObject);
-            if( contractsObject ) { 
-                Object.keys(contractsObject).forEach( data => {
-                    console.log(data);
-                })
-                res.json({ success: true, message: 'got the agreements successfully', contracts: contractsObject});
+            let contracts_testObj = await contractsModel.aggregate([
+                {   $match: { provider_Id: ObjectId(`${req.body.provider_id}`), status: 'completed' } },
+                {   $lookup: { 
+                        from            : "feedbacks",
+                        localField      : "_id",
+                        foreignField    : "agreement_id",
+                        as              : "feedback"
+                    }
+                },
+                {   $lookup: { 
+                        from            : "completedagreements",
+                        localField      : "_id",
+                        foreignField    : "agreement_id",
+                        as              : "amount"
+                    }
+                },
+                {
+                    $project: {
+                        "selected_service"  : 1,    "status"    : 1, 
+                        "agreement_type"    : 1,    "createdAt" : 1,
+                        "updatedAt"         : 1,    "_id"       : 1, 
+                        "feedback.rating_to_customer": 1,   "amount.payed_amount": 1 
+                    }
+                }
+            ]);
+            if( contracts_testObj ) { 
+                res.json({ success: true, message: 'got the agreements successfully', contracts: contracts_testObj});
             } else { 
                 res.json({ success: false, message: 'unable to find document with provided provider id'});
             }
         } catch ( error ) {
-            console.log(error.ReferenceError);
+            console.log(error);
             res.json({ success: false, message: 'error in getting the data', error: error});
         }
     } else {

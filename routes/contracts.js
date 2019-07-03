@@ -4,8 +4,9 @@ var passport    = require('passport');
 var bodyParser  = require('body-parser');
 
 // models
-var contractsModel = require('../models/agreements');
-var feedbackModel = require('../models/feedback');
+var contractsModel  = require('../models/agreements');
+
+var ObjectId        = require('mongoose').Types.ObjectId;
 
 // feedback Router
 var contractsRouter = express.Router();
@@ -38,27 +39,40 @@ contractsRouter.post('/provider_id', async ( req, res ) => {
 
 contractsRouter.post('/customer_id', async ( req, res ) => {
     let payload = req.body;
-    let contract_ids = [];
+
     if( payload.customer_id ){
-        let query   = { customer_id: payload.customer_id };
         try {    
-            let contractsObject = await contractsModel.find(query).lean().limit(10);
-            console.log(contractsObject);
-            if( contractsObject ) { 
-              await Object.keys(contractsObject).forEach( data => {
-                  if ( contractsObject[data].status === 'completed') {
-                    contract_ids.push(contractsObject[data]._id);  
-                  } 
-                });
-                if( contract_ids.length !== 0) { 
-                    feedbackModel.find({'agreement_id': {$in: contract_ids}}).select('rating_to_provider');
+            let contracts_testObj = await contractsModel.aggregate([
+                {   $match: { customer_id: ObjectId(`${req.body.customer_id}`), status: 'completed' } },
+                {   $lookup: { 
+                        from            : "feedbacks",
+                        localField      : "_id",
+                        foreignField    : "agreement_id",
+                        as              : "feedback"
+                    }
+                },
+                {   $lookup: { 
+                        from            : "completedagreements",
+                        localField      : "_id",
+                        foreignField    : "agreement_id",
+                        as              : "amount"
+                    }
+                },
+                {
+                    $project: {
+                        "selected_service": 1, "status": 1, "agreement_type": 1, "createdAt": 1,
+                        "feedback.rating_to_provider": 1, "updatedAt": 1, "_id": 1, "amount.payed_amount": 1 
+                    }
                 }
-                res.json({ success: true, message: 'got the agreements successfully', contracts: contractsObject});
+            ]);
+            console.log(contracts_testObj);
+            if( contracts_testObj ) { 
+                res.json({ success: true, message: 'got the agreements successfully', contracts: contracts_testObj});
             } else { 
                 res.json({ success: false, message: 'unable to find document with provided customer id'});
             }
         } catch ( error ) {
-            console.log(error.ReferenceError);
+            console.log(error);
             res.json({ success: false, message: 'error in getting the data', error: error});
         }
     } else {

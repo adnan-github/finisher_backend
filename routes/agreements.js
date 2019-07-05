@@ -349,7 +349,35 @@ agreementsRouter.get('/:id', (req, res, next) => {
   agreementsRouter.get('/getEarnings', async ( req, res ) => {
     let payload = req.body;
     if( payload.provider_id ) {
-      agreementsModel.find({ provider_Id: payload.provider_id }).lean().select("_id");
+      try {
+        const earnings_data = await earningsModel.aggregate([
+          {
+            $match: { provider_id: ObjectId(`${payload.provider_id}`)}
+          },
+          {
+            $lookup: {
+             from            : "feedbacks",
+             localField      : "agreement_id",
+             foreignField    : "agreement_id",
+             as              : "rating"
+            }
+          },
+          {
+            $project: {
+             "createdAt": 1, "updatedAt": 1, "provider_earning": 1, "payed_amount": 1,
+             "payment_status": 1, "company_share": 1, "rating.rating_to_provider": 1
+            }
+          }
+        ]);
+        if ( earnings_data ) {
+          res.json({ success: true, message: 'successfully got the earnings', earnings: earnings_data});
+        } else {
+          res.json({ success: false, message: 'there are no records for the provider'});
+        }
+      } catch (error) {
+        res.json({ success: false, message: 'error in finding the records', error: error});
+      }
+     
     } else { 
       res.json({ success: false, message: 'no provider id was found'});
     }

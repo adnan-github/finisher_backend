@@ -17,7 +17,7 @@ contractsRouter.post('/provider_id', async ( req, res ) => {
     if( payload.provider_id ){
         try {    
             let contracts_testObj = await contractsModel.aggregate([
-                {   $match: { provider_Id: ObjectId(`${req.body.provider_id}`), status: 'completed' } },
+                {   $match: { provider_id: ObjectId(`${req.body.provider_id}`), status: 'completed' } },
                 {   $lookup: { 
                         from            : "feedbacks",
                         localField      : "_id",

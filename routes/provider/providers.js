@@ -405,7 +405,7 @@ providersRouter.post('/pushNotificationToken', async (req, res) => {
 providersRouter.get("/providerLocation/:id", function(req, res){
   var io = req.app.io;
   console.log(req.params);
-    providersLocationModel.findOne({ providerId: (req.params.id)},function(err, location){
+    providersLocationModel.findOne({ provider_id: (req.params.id)},function(err, location){
         if (err){
             res.json({ success: false, message: 'unable to get providers location', error: err});
             return;

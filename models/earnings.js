@@ -8,7 +8,8 @@ const earningsSchema = new Schema({
         required: true
     },
     provider_earning: {
-        type: Number
+        type: Number,
+        required: true
     },
     provider_id: {
         type: Schema.Types.ObjectId,
@@ -26,7 +27,7 @@ const earningsSchema = new Schema({
         default: 'pending'
     },
     company_share: {
-        type: Schema.Types.String,
+        type: Schema.Types.Number,
         required: true
     }
 }, {

@@ -13,7 +13,7 @@ const geoLocationSchema = new Schema({
 });
 
 const customersLocationSchema = new Schema({
-    customerId: {
+    customer_id: {
         type: Schema.Types.ObjectId,
         ref: 'customers'
     },

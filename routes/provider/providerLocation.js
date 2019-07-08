@@ -36,7 +36,7 @@ providerLocationRouter.get("/providerLocation", function(req, res, next){
 
 providerLocationRouter.get("/providerLocation/:id", function(req, res, next){
 	var io = req.app.io;
-    providerLocationModel.findOne({providerId: req.params.id},function(err, location){
+    providerLocationModel.findOne({provider_id: req.params.id},function(err, location){
         if (err){
             res.json({ success: false, message: 'unable to get providers location', error: err});
         }

@@ -19,7 +19,7 @@ const agreementsSchema = new Schema({
         type: String,
         required: true
     },
-    provider_Id: {
+    provider_id: {
         type: Schema.Types.ObjectId,
         ref: 'providers'
     },
@@ -43,7 +43,7 @@ const agreementsSchema = new Schema({
     time: [timeTrackingSchema]
 }, {        
     timestamps: true
-}).index({ customer_id: 1, provider_Id: 1 });
+}).index({ customer_id: 1, provider_id: 1 });
 
 const agreementsModel = mongoose.model('agreements', agreementsSchema);
 

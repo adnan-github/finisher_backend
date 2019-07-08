@@ -6,8 +6,8 @@ module.exports = {
 
         var latitude = parseFloat(payload.location.coords.latitude);
         var longitude = parseFloat(payload.location.coords.longitude);
-        ProvidersLocationModel.findOneAndUpdate({ providerId: ObjectId(payload.providerId) }, {
-            providerId  : payload.providerId,
+        ProvidersLocationModel.findOneAndUpdate({ provider_id: ObjectId(payload.provider_id) }, {
+            provider_id  : payload.provider_id,
             category    : payload.category,
             socketId    : _id,
             status      : 'connected',
@@ -52,7 +52,7 @@ module.exports = {
                         "$maxDistance":15000
                     } 
                 }
-            }).select('coordinate.coordinates socketId providerId').limit(6).then( data => {
+            }).select('coordinate.coordinates socketId provider_id').limit(6).then( data => {
                 resolve(data);
             }).catch( err => {
                 reject( err );

@@ -5,9 +5,9 @@ module.exports = {
     updateCustomerLocation: ( payload, _id ) => {
         var latitude = parseFloat(payload.geometry.lat);
         var longitude = parseFloat(payload.geometry.lng);
-        CustomersLocationModel.findOneAndUpdate({ customerId: ObjectId(payload.customerId) }, {
+        CustomersLocationModel.findOneAndUpdate({ customer_id: ObjectId(payload.customer_id) }, {
             address     : payload.address,
-            customerId  : payload.customerId,
+            customer_id  : payload.customer_id,
             socketId    : _id,
             status      : 'connected',
             coordinate  : {
@@ -38,11 +38,11 @@ module.exports = {
         })
     },
     populateCustomersRecord: async ( id ) => {
-        var results = CustomersLocationModel.findOne({ customerId: id } ).populate('customerId');
+        var results = CustomersLocationModel.findOne({ customer_id: id } ).populate('customer_id');
         return results;
     },
     populateCustomerSocketId: async (id) => {
-        var results = await CustomersLocationModel.findOne({ customerId: id });
+        var results = await CustomersLocationModel.findOne({ customer_id: id });
         return results;
     }
 }

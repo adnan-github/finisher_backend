@@ -44,9 +44,9 @@ agreementsRouter.post('/initiate', async (request, response) => {
   // customer details that is requesting the agreement  
   let customer_details = await customers_Location(request.body.customer_id);
   let customer_object = {
-    name            : customer_details.customerId.name,
+    name            : customer_details.customer_id.name,
     address         : customer_details.address,
-    phone           : customer_details.customerId.phone,
+    phone           : customer_details.customer_id.phone,
     agreement_type  : request.body.agreement_type,
     category        : request.body.selected_service
 };
@@ -97,7 +97,7 @@ agreementsRouter.post('/initiate', async (request, response) => {
                 }
               } else if ( agreement.status == 'pending' && loop !== providers_list.length && loop !== 0 ) {
                 console.log(loop, 'on server');
-                let checkRequest = await providersWithRequests.find({ providerId: providers_list[loop].providerId}).lean();
+                let checkRequest = await providersWithRequests.find({ provider_id: providers_list[loop].provider_id}).lean();
                 if( !checkRequest ){
                   io.sockets.to(providers_list[loop].socketId).emit('action', { type: 'SERVICE_AGREEMENT_REQUEST', data: customer_object});
                 }
@@ -175,7 +175,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
         res.json({ success: false, message: 'agreement already awarded to another provider'});
       } else {
         let updated_agreement = await agreementsModel.findByIdAndUpdate( { _id: payload.agreement_id} , {
-          $set : { provider_Id: payload.provider_Id, status: 'accepted' }
+          $set : { provider_id: payload.provider_id, status: 'accepted' }
         });
         let customer_detail = await customers_Location( updated_agreement.customer_id );
         let data = await customerModel.findById({ _id: updated_agreement.customer_id}).select("push_token").lean();
@@ -229,7 +229,7 @@ agreementsRouter.get('/:id', (req, res, next) => {
           type    : 'PROVIDER_ARRIVED', 
           payload : response_data
         });
-        sendSMS.sendSMSToPhone(customer_data.customerId.username, provider_arrived_message( customer_data.customerId.name));
+        sendSMS.sendSMSToPhone(customer_data.customer_id.username, provider_arrived_message( customer_data.customer_id.name));
         res.json({ success: true, message: 'successfully sent message to customer'});
       } else {
         res.json({ success: false, message: 'unable to find customer data for the provided id'});
@@ -318,9 +318,10 @@ agreementsRouter.get('/:id', (req, res, next) => {
     if( !isNaN( payload.payed_amount )) {
       try {
         let provider_share = Number(payload.payed_amount) * (0.85);
+        let company_share  = Number(payload.payed_amount) * (0.15);
         let new_agreement = await earningsModel.create(new earningsModel({
           agreement_id      : payload.agreement_id,
-          company_share     : '15%',
+          company_share     : Number(company_share),
           payed_amount      : payload.payed_amount,
           provider_id       : payload.provider_id,
           provider_earning  :  Number(provider_share)
@@ -346,8 +347,8 @@ agreementsRouter.get('/:id', (req, res, next) => {
     }
   });
 
-  agreementsRouter.get('/getEarnings', async ( req, res ) => {
-    let payload = req.body;
+  agreementsRouter.get('/getEarnings/:provider_id', async ( req, res ) => {
+    let payload = req.params;
     if( payload.provider_id ) {
       try {
         const earnings_data = await earningsModel.aggregate([
@@ -362,15 +363,25 @@ agreementsRouter.get('/:id', (req, res, next) => {
              as              : "rating"
             }
           },
+          { $unwind: '$rating'},
           {
-            $project: {
-             "createdAt": 1, "updatedAt": 1, "provider_earning": 1, "payed_amount": 1,
-             "payment_status": 1, "company_share": 1, "rating.rating_to_provider": 1
+            $group: {
+              _id             : "$provider_id",
+              total_contracts : { $sum: 1 },
+              total_revenue   : { $sum: "$payed_amount" },
+              total_earnings  : { $sum: "$provider_earning" },
+              overall_rating  : { $avg: "$rating.rating_to_provider" },
+              amount_due      : { $sum: { $cond: [
+                  { $eq: [ "$payment_status", "pending"]},
+                  "$company_share",
+                  0 
+                ]}
+              }
             }
           }
         ]);
         if ( earnings_data ) {
-          res.json({ success: true, message: 'successfully got the earnings', earnings: earnings_data});
+          res.json({ success: true, message: 'successfully got the earnings', data: earnings_data});
         } else {
           res.json({ success: false, message: 'there are no records for the provider'});
         }

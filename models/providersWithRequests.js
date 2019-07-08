@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const providersWithRequestSchema = new Schema({
-    providerId: {
+    provider_id: {
         type: Schema.Types.ObjectId,
         required: true,
         unique: true

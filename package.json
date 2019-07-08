@@ -43,5 +43,9 @@
     "swagger-ui-express": "^4.0.7",
     "twilio": "^3.29.2",
     "validator": "^10.9.0"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-apidoc": "^0.2.8"
   }
 }

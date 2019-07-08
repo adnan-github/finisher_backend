@@ -347,6 +347,50 @@ agreementsRouter.get('/:id', (req, res, next) => {
     }
   });
 
+  /**
+    * @api {post} /api/agreements/ngs/:provider_id Get Provider Earnings
+    * @apiVersion 1.0.0
+    * @apiName Get Earnings
+    * @apiGroup Agreements
+    * @apiPermission authenticated user
+    *
+    * @apiParam (Request Params) {String} provider_id id of the provider to get earnings
+    *
+    * @apiExample {js} Example usage:
+    * const data = {
+    *   "provider_id": "57e903941ca43a5f0805ba5a"
+    * }
+    *
+    * $http.defaults.headers.common["Authorization"] = token;
+    *
+    * @apiSuccess (Success 200) {String} message successfully got the earnings!
+    * @apiSuccess (Success 200) {Boolean} success true
+    *
+    * @apiSuccessExample {json} Success response:
+    *     HTTPS 200 OK
+    *     {
+    *      "success": true,
+    *      "message": "successfully got the earnings!",
+    *      "data": [
+    *   {
+    *        "_id": "5cbb02193fdd1541f48e3707",
+    *        "total_contracts": 2,
+    *        "total_revenue": 10000,
+    *        "total_earnings": 8500,
+    *        "overall_rating": 4.85,
+    *        "amount_due": 825
+    *   }
+    *   ]
+    *    }
+    *
+    * @apiFailureExample {json} Failure Response:
+    *       HTTPS 200 OK
+    *       {
+    *       success: false, message: 'there are no records for the provider'  
+    *       }
+    * 
+    * @apiUse UnauthorizedError
+    */
   agreementsRouter.get('/getEarnings/:provider_id', async ( req, res ) => {
     let payload = req.params;
     if( payload.provider_id ) {

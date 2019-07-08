@@ -1,24 +1,25 @@
 // requirements
-var path        = require('path');
-var cors        = require('cors');
-var helmet      = require('helmet');
-var logger      = require('morgan');
-var express     = require('express');
-var passport    = require('passport');
-var createError = require('http-errors');
-var compression = require('compression');
-var dotenv      = require('dotenv').config({ debug: process.env.DEBUG });
+const path        = require('path');
+const cors        = require('cors');
+const helmet      = require('helmet');
+const logger      = require('morgan');
+const express     = require('express');
+const passport    = require('passport');
+const createError = require('http-errors');
+const compression = require('compression');
+const dotenv      = require('dotenv').config({ debug: process.env.DEBUG });
+const swaggerUi   = require('swagger-ui-express');
 
 // routes
-var customersRouter     = require('./routes/customer/customers');
-var indexRouter         = require('./routes/index');
-var servicesRouter      = require('./routes/services');
-var agreementsRouter    = require('./routes/agreements');
-var providersRouter     = require('./routes/provider/providers');
-var adminRouter         = require('./routes/admin/adminRouter');
-var promocodesRouter    = require('./routes/promoCodes');
-var feedbackRouter      = require('./routes/feedback');
-var contractsRouter     = require('./routes/contracts');
+const customersRouter     = require('./routes/customer/customers');
+const indexRouter         = require('./routes/index');
+const servicesRouter      = require('./routes/services');
+const agreementsRouter    = require('./routes/agreements');
+const providersRouter     = require('./routes/provider/providers');
+const adminRouter         = require('./routes/admin/adminRouter');
+const promocodesRouter    = require('./routes/promoCodes');
+const feedbackRouter      = require('./routes/feedback');
+const contractsRouter     = require('./routes/contracts');
 
 
 //middlwares
